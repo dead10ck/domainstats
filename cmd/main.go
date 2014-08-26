@@ -32,7 +32,7 @@ type opt struct {
 
 var (
 	opts              opt
-	defaultConfigPath string = os.Getenv("HOME") + "/.domainstats/config.toml"
+	defaultConfigPath string = os.Getenv("HOME") + "/.domainstats/default.toml"
 )
 
 const (
@@ -56,6 +56,7 @@ func main() {
 		log.Fatal(err)
 	}
 	//spew.Dump(config)
+	//os.Exit(0)
 	var outWriter *csv.Writer
 	var header []string
 	domains := readDomainsFrom(flag.Arg(flag.NArg() - 1))
