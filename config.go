@@ -272,6 +272,9 @@ func (c *Config) numEndpoints() int {
 	if any(c.TaggingDates) {
 		ctr++
 	}
+	if any(c.DomainRRHistory) {
+		ctr++
+	}
 	return ctr
 }
 
@@ -319,6 +322,14 @@ func (c *Config) DeriveMessages(inv *goinvestigate.Investigate,
 			respChan,
 		})
 	}
+	if any(c.DomainRRHistory) {
+		msgs = append(msgs, &DomainQueryMessage{
+			&DomainTagsQuery{
+				DomainQuery{inv, domain},
+			},
+			respChan,
+		})
+	}
 	return msgs
 }
 
@@ -326,13 +337,13 @@ type Config struct {
 	APIKey       string
 	NumEndpoints int
 	//NumFields     int
-	Status        bool
-	Categories    CategoriesConfig
-	Cooccurrences DomainScoreConfig
-	Related       DomainScoreConfig
-	Security      SecurityConfig
-	TaggingDates  TaggingDatesConfig
-	//DomainRRHistory DomainRRHistoryConfig
+	Status          bool
+	Categories      CategoriesConfig
+	Cooccurrences   DomainScoreConfig
+	Related         DomainScoreConfig
+	Security        SecurityConfig
+	TaggingDates    TaggingDatesConfig
+	DomainRRHistory DomainRRHistoryConfig
 }
 
 type CategoriesConfig struct {
@@ -371,4 +382,33 @@ type TaggingDatesConfig struct {
 	End      bool
 	Category bool
 	Url      bool
+}
+
+type DomainRRHistoryConfig struct {
+	FirstSeen       bool
+	LastSeen        bool
+	Name            bool
+	TTL             bool
+	Class           bool
+	Type            bool
+	RR              bool
+	Age             bool
+	TTLsMin         bool
+	TTLsMax         bool
+	TTLsMean        bool
+	TTLsMedian      bool
+	TTLsStdDev      bool
+	CountryCodes    bool
+	ASNs            bool
+	Prefixes        bool
+	RIPSCount       bool
+	RIPSDiversity   bool
+	Locations       bool
+	GeoDistanceSum  bool
+	GeoDistanceMean bool
+	NonRoutable     bool
+	MailExchanger   bool
+	CName           bool
+	FFCandidate     bool
+	RIPSStability   bool
 }
