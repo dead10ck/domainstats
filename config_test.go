@@ -352,3 +352,122 @@ func TestExtractDomainTagInfo(t *testing.T) {
 	config.TaggingDates.End = true
 	config.TaggingDates.Url = true
 }
+
+func TestExtractDomainRRHistoryInfo(t *testing.T) {
+	hist := &goinvestigate.DomainRRHistory{
+		RRPeriods: []goinvestigate.ResourceRecordPeriod{
+			goinvestigate.ResourceRecordPeriod{
+				FirstSeen: "2013-07-31",
+				LastSeen:  "2013-10-17",
+				RRs: []goinvestigate.ResourceRecord{
+					goinvestigate.ResourceRecord{
+						Name:  "example.com.",
+						TTL:   86400,
+						Class: "IN",
+						Type:  "A",
+						RR:    "93.184.216.119",
+					},
+				},
+			},
+			goinvestigate.ResourceRecordPeriod{
+				FirstSeen: "2013-07-31",
+				LastSeen:  "2013-10-17",
+				RRs: []goinvestigate.ResourceRecord{
+					goinvestigate.ResourceRecord{
+						Name:  "example.com.",
+						TTL:   86400,
+						Class: "US",
+						Type:  "A",
+						RR:    "93.184.216.119",
+					},
+				},
+			},
+		},
+		RRFeatures: goinvestigate.DomainResourceRecordFeatures{
+			Age:           91,
+			TTLsMin:       86400,
+			TTLsMax:       172800,
+			TTLsMean:      129600,
+			TTLsMedian:    129600,
+			TTLsStdDev:    43200,
+			CountryCodes:  []string{"US"},
+			ASNs:          []int{15133, 40528},
+			Prefixes:      []string{"93.184.208.0", "192.0.43.0"},
+			RIPSCount:     2,
+			RIPSDiversity: 1,
+			Locations: []goinvestigate.Location{
+				goinvestigate.Location{
+					Lat: 38.0,
+					Lon: -97.0,
+				},
+				goinvestigate.Location{
+					Lat: 33.78659999999999,
+					Lon: -118.2987,
+				},
+			},
+			GeoDistanceSum:  1970.1616237100388,
+			GeoDistanceMean: 985.0808118550194,
+			NonRoutable:     false,
+			MailExchanger:   false,
+			CName:           false,
+			FFCandidate:     false,
+			RIPSStability:   0.5,
+		},
+	}
+	ref := []string{
+		"2013-07-31:2013-10-17:example.com.:86400:IN:A:93.184.216.119, " +
+			"2013-07-31:2013-10-17:example.com.:86400:US:A:93.184.216.119",
+		"91", "86400", "172800", "129600", "129600", "43200",
+		"US", "15133, 40528", "93.184.208.0, 192.0.43.0", "2", "1",
+		"38:-97, 33.78659999999999:-118.2987",
+		"1970.1616237100388", "985.0808118550194",
+		"false", "false", "false", "false", "0.5",
+	}
+	test := config.extractDomainRRHistoryInfo(hist)
+	if !strSliceEq(ref, test) {
+		t.Fatalf("%v != %v", ref, test)
+	}
+
+	// couple of sanity checks. In RRHistory, only keep CountryCode
+	// remove last 5 fields
+	config.DomainRRHistory.Name = false
+	config.DomainRRHistory.TTL = false
+	config.DomainRRHistory.Type = false
+	config.DomainRRHistory.RR = false
+	config.DomainRRHistory.NonRoutable = false
+	config.DomainRRHistory.MailExchanger = false
+	config.DomainRRHistory.CName = false
+	config.DomainRRHistory.FFCandidate = false
+	config.DomainRRHistory.RIPSStability = false
+	ref = []string{
+		"2013-07-31:2013-10-17:IN, " +
+			"2013-07-31:2013-10-17:US",
+		"91", "86400", "172800", "129600", "129600", "43200",
+		"US", "15133, 40528", "93.184.208.0, 192.0.43.0", "2", "1",
+		"38:-97, 33.78659999999999:-118.2987",
+		"1970.1616237100388", "985.0808118550194",
+	}
+	test = config.extractDomainRRHistoryInfo(hist)
+	if !strSliceEq(ref, test) {
+		t.Fatalf("%v != %v", ref, test)
+	}
+	config.DomainRRHistory.Name = true
+	config.DomainRRHistory.TTL = true
+	config.DomainRRHistory.Type = true
+	config.DomainRRHistory.RR = true
+	config.DomainRRHistory.NonRoutable = true
+	config.DomainRRHistory.MailExchanger = true
+	config.DomainRRHistory.CName = true
+	config.DomainRRHistory.FFCandidate = true
+	config.DomainRRHistory.RIPSStability = true
+
+	// everything off should return an empty list
+	oldRRHist := config.DomainRRHistory
+	config.DomainRRHistory = DomainRRHistoryConfig{}
+	ref = []string{}
+	test = config.extractDomainRRHistoryInfo(hist)
+	if !strSliceEq(ref, test) {
+		t.Fatalf("%v != %v", ref, test)
+	}
+	config.DomainRRHistory = oldRRHist
+}

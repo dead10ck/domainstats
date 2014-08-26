@@ -49,6 +49,7 @@ func (c *Config) DeriveHeader() (header []string) {
 	appendField("Status", c.Status)
 	appendFields(c.Categories)
 	appendFields(c.Security)
+	appendFields(c.DomainRRHistory)
 
 	// Add a single header field for each dynamic field
 	if any(c.Cooccurrences) {
@@ -187,7 +188,69 @@ func (c *Config) extractDomainTagInfo(resp []goinvestigate.DomainTag) []string {
 }
 
 func (c *Config) extractDomainRRHistoryInfo(resp *goinvestigate.DomainRRHistory) []string {
-	return []string{}
+	row := []string{}
+	rrPeriodsStr := c.rrPeriodsToStr(resp.RRPeriods)
+	row = appendIf(row, rrPeriodsStr, rrPeriodsStr != "")
+	row = appendIf(row, strconv.Itoa(resp.RRFeatures.Age), c.DomainRRHistory.Age)
+	row = appendIf(row, strconv.Itoa(resp.RRFeatures.TTLsMin), c.DomainRRHistory.TTLsMin)
+	row = appendIf(row, strconv.Itoa(resp.RRFeatures.TTLsMax), c.DomainRRHistory.TTLsMax)
+	row = appendIf(row, convertFloatToStr(resp.RRFeatures.TTLsMean), c.DomainRRHistory.TTLsMean)
+	row = appendIf(row, convertFloatToStr(resp.RRFeatures.TTLsMedian), c.DomainRRHistory.TTLsMedian)
+	row = appendIf(row, convertFloatToStr(resp.RRFeatures.TTLsStdDev), c.DomainRRHistory.TTLsStdDev)
+	row = appendIf(row, strings.Join(resp.RRFeatures.CountryCodes, ", "), c.DomainRRHistory.CountryCodes)
+
+	asnStrs := []string{}
+	for _, asn := range resp.RRFeatures.ASNs {
+		asnStrs = append(asnStrs, strconv.Itoa(asn))
+	}
+
+	row = appendIf(row, strings.Join(asnStrs, ", "), c.DomainRRHistory.ASNs)
+	row = appendIf(row, strings.Join(resp.RRFeatures.Prefixes, ", "), c.DomainRRHistory.Prefixes)
+	row = appendIf(row, strconv.Itoa(resp.RRFeatures.RIPSCount), c.DomainRRHistory.RIPSCount)
+	row = appendIf(row, convertFloatToStr(resp.RRFeatures.RIPSDiversity), c.DomainRRHistory.RIPSDiversity)
+	row = appendIf(row, locsToStr(resp.RRFeatures.Locations), c.DomainRRHistory.Locations)
+	row = appendIf(row, convertFloatToStr(resp.RRFeatures.GeoDistanceSum), c.DomainRRHistory.GeoDistanceSum)
+	row = appendIf(row, convertFloatToStr(resp.RRFeatures.GeoDistanceMean), c.DomainRRHistory.GeoDistanceMean)
+	row = appendIf(row, strconv.FormatBool(resp.RRFeatures.NonRoutable), c.DomainRRHistory.NonRoutable)
+	row = appendIf(row, strconv.FormatBool(resp.RRFeatures.MailExchanger), c.DomainRRHistory.MailExchanger)
+	row = appendIf(row, strconv.FormatBool(resp.RRFeatures.CName), c.DomainRRHistory.CName)
+	row = appendIf(row, strconv.FormatBool(resp.RRFeatures.FFCandidate), c.DomainRRHistory.FFCandidate)
+	row = appendIf(row, convertFloatToStr(resp.RRFeatures.RIPSStability), c.DomainRRHistory.RIPSStability)
+	return row
+}
+
+func locsToStr(locs []goinvestigate.Location) string {
+	strs := []string{}
+	for _, loc := range locs {
+		locStrs := []string{}
+		locStrs = append(locStrs, convertFloatToStr(loc.Lat))
+		locStrs = append(locStrs, convertFloatToStr(loc.Lon))
+		strs = append(strs, strings.Join(locStrs, ":"))
+	}
+	return strings.Join(strs, ", ")
+}
+
+func (c *Config) rrPeriodsToStr(periods []goinvestigate.ResourceRecordPeriod) string {
+	periodStrs := []string{}
+	for _, p := range periods {
+		flStrs := []string{}
+		flStrs = appendIf(flStrs, p.FirstSeen, c.DomainRRHistory.FirstSeen)
+		flStrs = appendIf(flStrs, p.LastSeen, c.DomainRRHistory.LastSeen)
+		for _, rr := range p.RRs {
+			rrStrs := []string{}
+			rrStrs = appendIf(rrStrs, rr.Name, c.DomainRRHistory.Name)
+			rrStrs = appendIf(rrStrs, strconv.Itoa(rr.TTL), c.DomainRRHistory.TTL)
+			rrStrs = appendIf(rrStrs, rr.Class, c.DomainRRHistory.Class)
+			rrStrs = appendIf(rrStrs, rr.Type, c.DomainRRHistory.Type)
+			rrStrs = appendIf(rrStrs, rr.RR, c.DomainRRHistory.RR)
+
+			flrr := append(flStrs, rrStrs...)
+			if len(flrr) != 0 {
+				periodStrs = append(periodStrs, strings.Join(flrr, ":"))
+			}
+		}
+	}
+	return strings.Join(periodStrs, ", ")
 }
 
 func GeoString(gs []goinvestigate.GeoFeatures) string {

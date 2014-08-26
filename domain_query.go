@@ -7,8 +7,8 @@ type DomainQueryType interface {
 }
 
 type DomainQuery struct {
-	inv    *goinvestigate.Investigate
-	domain string
+	Inv    *goinvestigate.Investigate
+	Domain string
 }
 
 type DomainQueryMessage struct {
@@ -23,11 +23,11 @@ type DomainQueryResponse struct {
 
 type CategorizationQuery struct {
 	DomainQuery
-	labels bool
+	Labels bool
 }
 
 func (q *CategorizationQuery) Query() DomainQueryResponse {
-	resp, err := q.inv.Categorization(q.domain, q.labels)
+	resp, err := q.Inv.Categorization(q.Domain, q.Labels)
 	return DomainQueryResponse{Resp: resp, Err: err}
 }
 
@@ -36,7 +36,7 @@ type RelatedQuery struct {
 }
 
 func (q *RelatedQuery) Query() DomainQueryResponse {
-	resp, err := q.inv.RelatedDomains(q.domain)
+	resp, err := q.Inv.RelatedDomains(q.Domain)
 	return DomainQueryResponse{Resp: resp, Err: err}
 }
 
@@ -45,7 +45,7 @@ type CooccurrencesQuery struct {
 }
 
 func (q *CooccurrencesQuery) Query() DomainQueryResponse {
-	resp, err := q.inv.RelatedDomains(q.domain)
+	resp, err := q.Inv.RelatedDomains(q.Domain)
 	return DomainQueryResponse{Resp: resp, Err: err}
 }
 
@@ -54,7 +54,7 @@ type SecurityQuery struct {
 }
 
 func (q *SecurityQuery) Query() DomainQueryResponse {
-	resp, err := q.inv.Security(q.domain)
+	resp, err := q.Inv.Security(q.Domain)
 	return DomainQueryResponse{Resp: resp, Err: err}
 }
 
@@ -63,6 +63,16 @@ type DomainTagsQuery struct {
 }
 
 func (q *DomainTagsQuery) Query() DomainQueryResponse {
-	resp, err := q.inv.DomainTags(q.domain)
+	resp, err := q.Inv.DomainTags(q.Domain)
+	return DomainQueryResponse{Resp: resp, Err: err}
+}
+
+type DomainRRHistoryQuery struct {
+	DomainQuery
+	QueryType string
+}
+
+func (q *DomainRRHistoryQuery) Query() DomainQueryResponse {
+	resp, err := q.Inv.DomainRRHistory(q.Domain, q.QueryType)
 	return DomainQueryResponse{Resp: resp, Err: err}
 }

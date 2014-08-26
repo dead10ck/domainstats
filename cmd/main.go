@@ -68,6 +68,7 @@ func main() {
 
 	//header = config.DeriveHeader()
 	//fmt.Printf("header: %v\n", header)
+	//os.Exit(0)
 
 	if opts.outFile != "" {
 		outFile, err := os.Create(opts.outFile)
