@@ -1,3 +1,5 @@
 *.swp
 *.notes
+*.DS_Store
 tags
+domainstats
