@@ -54,8 +54,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	//spew.Dump(config)
-	//os.Exit(0)
 	var outWriter *csv.Writer
 	var header []string
 	domains := readDomainsFrom(flag.Arg(flag.NArg() - 1))
@@ -64,10 +62,6 @@ func main() {
 	if opts.verbose {
 		inv.SetVerbose(true)
 	}
-
-	//header = config.DeriveHeader()
-	//fmt.Printf("header: %v\n", header)
-	//os.Exit(0)
 
 	if opts.outFile != "" {
 		outFile, err := os.Create(opts.outFile)
@@ -93,7 +87,6 @@ func main() {
 	}()
 
 	outChan := getInfo(config, inv, inChan)
-	//getInfo(config, inv, inChan)
 
 	numProcessed := 0
 
@@ -165,8 +158,6 @@ func getInfo(config *domainstats.Config, inv *goinvestigate.Investigate, domainC
 	outChan := make(chan []string, 100)
 	qChan := make(chan *domainstats.DomainQueryMessage)
 	wg := new(sync.WaitGroup)
-	//fns := config.DeriveFuncCalls(inv)
-	//fmt.Printf("fns: %v\n", fns)
 
 	// launch the query goroutines
 	for i := 0; i < opts.maxGoroutines; i++ {
