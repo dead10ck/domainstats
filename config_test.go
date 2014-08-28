@@ -76,6 +76,19 @@ func TestExtractDomainCatInfo(t *testing.T) {
 	config.Status = true
 	config.Categories.SecurityCategories = true
 	config.Categories.ContentCategories = true
+
+	// if a field is configured to be fetched, but it is just
+	// empty, it should still return blank fields
+	dcBlank := &goinvestigate.DomainCategorization{
+		Status:             1,
+		SecurityCategories: []string{},
+		ContentCategories:  []string{},
+	}
+	ref = []string{"1", "", ""}
+	test = config.extractDomainCatInfo(dcBlank)
+	if !strSliceEq(ref, test) {
+		t.Fatalf("%v != %v", ref, test)
+	}
 }
 
 func TestExtractRelatedDomainInfo(t *testing.T) {
@@ -128,6 +141,15 @@ func TestExtractRelatedDomainInfo(t *testing.T) {
 	}
 	config.Related.Domain = true
 	config.Related.Score = true
+
+	// if a field is configured to be fetched, but it is just
+	// empty, it should still return blank fields
+	rdBlank := []goinvestigate.RelatedDomain{}
+	ref = []string{""}
+	test = config.extractRelatedDomainInfo(rdBlank)
+	if !strSliceEq(ref, test) {
+		t.Fatalf("%v != %v", ref, test)
+	}
 }
 
 func TestExtractCooccurrenceInfo(t *testing.T) {
@@ -176,6 +198,15 @@ func TestExtractCooccurrenceInfo(t *testing.T) {
 	}
 	config.Cooccurrences.Domain = true
 	config.Cooccurrences.Score = true
+
+	// if a field is configured to be fetched, but it is just
+	// empty, it should still return blank fields
+	refBlank := []goinvestigate.Cooccurrence{}
+	ref = []string{""}
+	test = config.extractCooccurrenceInfo(refBlank)
+	if !strSliceEq(ref, test) {
+		t.Fatalf("%v != %v", ref, test)
+	}
 }
 
 func TestExtractSecurityFeaturesInfo(t *testing.T) {
@@ -296,6 +327,36 @@ func TestExtractSecurityFeaturesInfo(t *testing.T) {
 	config.Security.KSTest = true
 	config.Security.Attack = true
 	config.Security.ThreatType = true
+
+	// if a field is configured to be fetched, but it is just
+	// empty, it should still return blank fields
+	secBlank := &goinvestigate.SecurityFeatures{
+		DGAScore:               0.0,
+		Perplexity:             0.0,
+		Entropy:                0.0,
+		SecureRank2:            0.0,
+		PageRank:               0.0,
+		ASNScore:               0.0,
+		PrefixScore:            0.0,
+		RIPScore:               0.0,
+		Popularity:             0.0,
+		Fastflux:               false,
+		Geodiversity:           []goinvestigate.GeoFeatures{},
+		GeodiversityNormalized: []goinvestigate.GeoFeatures{},
+		TLDGeodiversity:        []goinvestigate.GeoFeatures{},
+		Geoscore:               0,
+		KSTest:                 0,
+		Attack:                 "",
+		ThreatType:             "",
+	}
+	ref = []string{
+		"0", "0", "0", "0", "0", "0", "0", "0", "0",
+		"false", "", "", "", "0", "0", "", "",
+	}
+	test = config.extractSecurityFeaturesInfo(secBlank)
+	if !strSliceEq(ref, test) {
+		t.Fatalf("%v != %v", ref, test)
+	}
 }
 
 func TestExtractDomainTagInfo(t *testing.T) {
@@ -351,6 +412,15 @@ func TestExtractDomainTagInfo(t *testing.T) {
 	config.TaggingDates.Begin = true
 	config.TaggingDates.End = true
 	config.TaggingDates.Url = true
+
+	// if a field is configured to be fetched, but it is just
+	// empty, it should still return blank fields
+	dtBlank := []goinvestigate.DomainTag{}
+	ref = []string{""}
+	test = config.extractDomainTagInfo(dtBlank)
+	if !strSliceEq(ref, test) {
+		t.Fatalf("%v != %v", ref, test)
+	}
 }
 
 func TestExtractDomainRRHistoryInfo(t *testing.T) {
@@ -470,4 +540,39 @@ func TestExtractDomainRRHistoryInfo(t *testing.T) {
 		t.Fatalf("%v != %v", ref, test)
 	}
 	config.DomainRRHistory = oldRRHist
+
+	// if a field is configured to be fetched, but it is just
+	// empty, it should still return blank fields
+	histBlank := &goinvestigate.DomainRRHistory{
+		RRPeriods: []goinvestigate.ResourceRecordPeriod{},
+		RRFeatures: goinvestigate.DomainResourceRecordFeatures{
+			Age:             0,
+			TTLsMin:         0,
+			TTLsMax:         0,
+			TTLsMean:        0,
+			TTLsMedian:      0,
+			TTLsStdDev:      0,
+			CountryCodes:    []string{},
+			ASNs:            []int{},
+			Prefixes:        []string{},
+			RIPSCount:       0,
+			RIPSDiversity:   0,
+			Locations:       []goinvestigate.Location{},
+			GeoDistanceSum:  0,
+			GeoDistanceMean: 0,
+			NonRoutable:     false,
+			MailExchanger:   false,
+			CName:           false,
+			FFCandidate:     false,
+			RIPSStability:   0,
+		},
+	}
+	ref = []string{
+		"", "0", "0", "0", "0", "0", "0", "", "", "", "0", "0", "",
+		"0", "0", "false", "false", "false", "false", "0",
+	}
+	test = config.extractDomainRRHistoryInfo(histBlank)
+	if !strSliceEq(ref, test) {
+		t.Fatalf("%v != %v", ref, test)
+	}
 }
