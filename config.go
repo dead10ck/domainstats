@@ -106,6 +106,9 @@ func (c *Config) extractDomainCatInfo(resp *goinvestigate.DomainCategorization) 
 
 // dynamic field. Should return a singleton list
 func (c *Config) extractRelatedDomainInfo(resp []goinvestigate.RelatedDomain) []string {
+	if len(resp) == 0 && any(c.Related) {
+		return []string{""}
+	}
 	row := []string{}
 	for _, rd := range resp {
 		if c.Related.Domain {
@@ -128,6 +131,9 @@ func (c *Config) extractRelatedDomainInfo(resp []goinvestigate.RelatedDomain) []
 
 // dynamic field. Should return a singleton list
 func (c *Config) extractCooccurrenceInfo(resp []goinvestigate.Cooccurrence) []string {
+	if len(resp) == 0 && any(c.Cooccurrences) {
+		return []string{""}
+	}
 	row := []string{}
 	for _, cooc := range resp {
 		if c.Cooccurrences.Domain {
@@ -429,8 +435,8 @@ type SecurityConfig struct {
 	ASNScore               bool
 	PrefixScore            bool
 	RIPScore               bool
-	Fastflux               bool
 	Popularity             bool
+	Fastflux               bool
 	Geodiversity           bool
 	GeodiversityNormalized bool
 	TLDGeodiversity        bool
