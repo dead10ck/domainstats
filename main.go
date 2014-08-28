@@ -35,7 +35,7 @@ var (
 )
 
 const (
-	DEFAULT_MAX_GOROUTINES = 10
+	DEFAULT_MAX_GOROUTINES = 5
 )
 
 func init() {
