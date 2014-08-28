@@ -430,15 +430,15 @@ func TestExtractDomainRRHistoryInfo(t *testing.T) {
 
 	// couple of sanity checks. In RRHistory, only keep CountryCode
 	// remove last 5 fields
-	config.DomainRRHistory.Name = false
-	config.DomainRRHistory.TTL = false
-	config.DomainRRHistory.Type = false
-	config.DomainRRHistory.RR = false
-	config.DomainRRHistory.NonRoutable = false
-	config.DomainRRHistory.MailExchanger = false
-	config.DomainRRHistory.CName = false
-	config.DomainRRHistory.FFCandidate = false
-	config.DomainRRHistory.RIPSStability = false
+	config.DomainRRHistory.Periods.Name = false
+	config.DomainRRHistory.Periods.TTL = false
+	config.DomainRRHistory.Periods.Type = false
+	config.DomainRRHistory.Periods.RR = false
+	config.DomainRRHistory.Features.NonRoutable = false
+	config.DomainRRHistory.Features.MailExchanger = false
+	config.DomainRRHistory.Features.CName = false
+	config.DomainRRHistory.Features.FFCandidate = false
+	config.DomainRRHistory.Features.RIPSStability = false
 	ref = []string{
 		"2013-07-31:2013-10-17:IN, " +
 			"2013-07-31:2013-10-17:US",
@@ -451,15 +451,15 @@ func TestExtractDomainRRHistoryInfo(t *testing.T) {
 	if !strSliceEq(ref, test) {
 		t.Fatalf("%v != %v", ref, test)
 	}
-	config.DomainRRHistory.Name = true
-	config.DomainRRHistory.TTL = true
-	config.DomainRRHistory.Type = true
-	config.DomainRRHistory.RR = true
-	config.DomainRRHistory.NonRoutable = true
-	config.DomainRRHistory.MailExchanger = true
-	config.DomainRRHistory.CName = true
-	config.DomainRRHistory.FFCandidate = true
-	config.DomainRRHistory.RIPSStability = true
+	config.DomainRRHistory.Periods.Name = true
+	config.DomainRRHistory.Periods.TTL = true
+	config.DomainRRHistory.Periods.Type = true
+	config.DomainRRHistory.Periods.RR = true
+	config.DomainRRHistory.Features.NonRoutable = true
+	config.DomainRRHistory.Features.MailExchanger = true
+	config.DomainRRHistory.Features.CName = true
+	config.DomainRRHistory.Features.FFCandidate = true
+	config.DomainRRHistory.Features.RIPSStability = true
 
 	// everything off should return an empty list
 	oldRRHist := config.DomainRRHistory
