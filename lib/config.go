@@ -386,9 +386,6 @@ func NewConfig(configFilePath string) (config *Config, err error) {
 		log.Fatal("Config file is missing APIKey")
 	}
 
-	config.NumEndpoints = config.numEndpoints()
-	//config.NumFields = config.numFields()
-
 	return config, nil
 }
 

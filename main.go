@@ -18,7 +18,7 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/dead10ck/domainstats"
+	domainstats "github.com/dead10ck/domainstats/lib"
 	"github.com/dead10ck/goinvestigate"
 )
 
