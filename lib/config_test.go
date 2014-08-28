@@ -21,6 +21,7 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	inv = goinvestigate.New(config.APIKey)
 }
 
 func strSliceEq(a []string, b []string) bool {
@@ -33,6 +34,40 @@ func strSliceEq(a []string, b []string) bool {
 		}
 	}
 	return true
+}
+
+func TestDeriveMessages(t *testing.T) {
+	msgs := config.DeriveMessages(inv, "www.google.com")
+
+	if len(msgs) != 6 {
+		t.Fatalf("msgs wrong length. Should be 6: %v\n", msgs)
+	}
+
+	i := 0
+	_ = msgs[i].Q.(*CategorizationQuery)
+	i++
+	_ = msgs[i].Q.(*CooccurrencesQuery)
+	i++
+	_ = msgs[i].Q.(*RelatedQuery)
+	i++
+	_ = msgs[i].Q.(*SecurityQuery)
+	i++
+	_ = msgs[i].Q.(*DomainTagsQuery)
+	i++
+	_ = msgs[i].Q.(*DomainRRHistoryQuery)
+
+	// take some out
+	varConfig := Config{
+		Status:     true,
+		Categories: CategoriesConfig{SecurityCategories: true},
+		Security:   SecurityConfig{DGAScore: true},
+	}
+	msgs = varConfig.DeriveMessages(inv, "www.google.com")
+
+	i = 0
+	_ = msgs[i].Q.(*CategorizationQuery)
+	i++
+	_ = msgs[i].Q.(*SecurityQuery)
 }
 
 func TestExtractDomainCatInfo(t *testing.T) {
