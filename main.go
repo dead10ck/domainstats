@@ -122,6 +122,8 @@ func process(inv *goinvestigate.Investigate, config *domainstats.Config,
 	qChan chan<- *domainstats.DomainQueryMessage,
 	outChan chan<- []string,
 	wg *sync.WaitGroup) {
+
+domainLoop:
 	for domain := range domainChan {
 
 		// generate the list of queries to make for each domain
@@ -138,8 +140,9 @@ func process(inv *goinvestigate.Investigate, config *domainstats.Config,
 		for _, q := range queries {
 			qmResp := <-q.RespChan
 			if qmResp.Err != nil {
-				inv.Logf("error during query for %v: %v", domain, qmResp.Err)
-				continue
+				log.Printf("error during query for %v: %v\nskipping this domain",
+					domain, qmResp.Err)
+				continue domainLoop
 			}
 			subRow, err := config.ExtractCSVSubRow(qmResp.Resp)
 			if err != nil {
