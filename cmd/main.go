@@ -18,7 +18,6 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/dead10ck/domainstats"
 	"github.com/dead10ck/goinvestigate"
 )
@@ -76,6 +75,7 @@ func main() {
 			log.Fatal(err)
 		}
 		outWriter = csv.NewWriter(outFile)
+		outWriter.Comma = rune('\t')
 		header = config.DeriveHeader()
 		outWriter.Write(header)
 		defer func() {
@@ -100,7 +100,7 @@ func main() {
 	for respRow := range outChan {
 		numProcessed++
 		fmt.Printf("\r%120s", " ")
-		fmt.Printf("\r%d/%d: %v", numProcessed, len(domains), respRow)
+		fmt.Printf("\r%d/%d: %s", numProcessed, len(domains), respRow[0])
 		if outWriter != nil {
 			outWriter.Write(respRow)
 		}
@@ -125,12 +125,14 @@ func query(qChan <-chan *domainstats.DomainQueryMessage) {
 }
 
 func process(inv *goinvestigate.Investigate, config *domainstats.Config,
-	domainChan <-chan string, qChan chan<- *domainstats.DomainQueryMessage, wg *sync.WaitGroup) {
-	respChan := make(chan domainstats.DomainQueryResponse, 10)
+	domainChan <-chan string,
+	qChan chan<- *domainstats.DomainQueryMessage,
+	outChan chan<- []string,
+	wg *sync.WaitGroup) {
 	for domain := range domainChan {
 
 		// generate the list of queries to make for each domain
-		queries := config.DeriveMessages(inv, domain, respChan)
+		queries := config.DeriveMessages(inv, domain)
 
 		// send each query on the query channel for the query goroutines
 		// to receive
@@ -138,6 +140,7 @@ func process(inv *goinvestigate.Investigate, config *domainstats.Config,
 			qChan <- q
 		}
 
+		row := []string{domain}
 		// receive once for each query that was sent
 		for _, q := range queries {
 			qmResp := <-q.RespChan
@@ -145,15 +148,15 @@ func process(inv *goinvestigate.Investigate, config *domainstats.Config,
 				inv.Logf("error during query for %v: %v", domain, qmResp.Err)
 				continue
 			}
-			row, err := config.ExtractCSVSubRow(qmResp.Resp)
+			subRow, err := config.ExtractCSVSubRow(qmResp.Resp)
 			if err != nil {
 				inv.Logf("error extracting CSV sub row: %v", err)
 				continue
 			}
-			spew.Dump(row)
+			row = append(row, subRow...)
 		}
 
-		//outChan <- ...
+		outChan <- row
 	}
 	wg.Done()
 }
@@ -173,13 +176,14 @@ func getInfo(config *domainstats.Config, inv *goinvestigate.Investigate, domainC
 	// launch the processor goroutines
 	for i := 0; i < opts.maxGoroutines; i++ {
 		wg.Add(1)
-		go process(inv, config, domainChan, qChan, wg)
+		go process(inv, config, domainChan, qChan, outChan, wg)
 	}
 
 	// launch a goroutine which closes the output channel when the processor
 	// goroutines are finished
 	go func() {
 		wg.Wait()
+		close(qChan)
 		close(outChan)
 	}()
 
