@@ -77,7 +77,7 @@ func TestExtractDomainCatInfo(t *testing.T) {
 		ContentCategories:  []string{"8", "15", "23"},
 	}
 	ref := []string{"1", "Malware, Botnet, Trojan", "8, 15, 23"}
-	test := config.extractDomainCatInfo(dc)
+	test, _ := config.ExtractCSVSubRow(dc)
 	if !strSliceEq(ref, test) {
 		t.Fatalf("%v != %v", ref, test)
 	}
@@ -85,7 +85,7 @@ func TestExtractDomainCatInfo(t *testing.T) {
 	// test with fields omitted
 	config.Status = false
 	ref = []string{"Malware, Botnet, Trojan", "8, 15, 23"}
-	test = config.extractDomainCatInfo(dc)
+	test, _ = config.ExtractCSVSubRow(dc)
 	if !strSliceEq(ref, test) {
 		t.Fatalf("%v != %v", ref, test)
 	}
@@ -93,7 +93,7 @@ func TestExtractDomainCatInfo(t *testing.T) {
 
 	config.Categories.SecurityCategories = false
 	ref = []string{"1", "8, 15, 23"}
-	test = config.extractDomainCatInfo(dc)
+	test, _ = config.ExtractCSVSubRow(dc)
 	if !strSliceEq(ref, test) {
 		t.Fatalf("%v != %v", ref, test)
 	}
@@ -104,7 +104,7 @@ func TestExtractDomainCatInfo(t *testing.T) {
 	config.Categories.SecurityCategories = false
 	config.Categories.ContentCategories = false
 	ref = []string{}
-	test = config.extractDomainCatInfo(dc)
+	test, _ = config.ExtractCSVSubRow(dc)
 	if !strSliceEq(ref, test) {
 		t.Fatalf("%v != %v", ref, test)
 	}
@@ -120,7 +120,7 @@ func TestExtractDomainCatInfo(t *testing.T) {
 		ContentCategories:  []string{},
 	}
 	ref = []string{"1", "", ""}
-	test = config.extractDomainCatInfo(dcBlank)
+	test, _ = config.ExtractCSVSubRow(dcBlank)
 	if !strSliceEq(ref, test) {
 		t.Fatalf("%v != %v", ref, test)
 	}
@@ -143,7 +143,7 @@ func TestExtractRelatedDomainInfo(t *testing.T) {
 	}
 
 	ref := []string{"www.example1.com:10, info.example2.com.com:9, support.example.com:3"}
-	test := config.extractRelatedDomainInfo(rd)
+	test, _ := config.ExtractCSVSubRow(rd)
 	if !strSliceEq(ref, test) {
 		t.Fatalf("%v != %v", ref, test)
 	}
@@ -151,7 +151,7 @@ func TestExtractRelatedDomainInfo(t *testing.T) {
 	// turn off scores
 	config.Related.Score = false
 	ref = []string{"www.example1.com, info.example2.com.com, support.example.com"}
-	test = config.extractRelatedDomainInfo(rd)
+	test, _ = config.ExtractCSVSubRow(rd)
 	if !strSliceEq(ref, test) {
 		t.Fatalf("%v != %v", ref, test)
 	}
@@ -160,7 +160,7 @@ func TestExtractRelatedDomainInfo(t *testing.T) {
 	// turn off domains
 	config.Related.Domain = false
 	ref = []string{"10, 9, 3"}
-	test = config.extractRelatedDomainInfo(rd)
+	test, _ = config.ExtractCSVSubRow(rd)
 	if !strSliceEq(ref, test) {
 		t.Fatalf("%v != %v", ref, test)
 	}
@@ -170,7 +170,7 @@ func TestExtractRelatedDomainInfo(t *testing.T) {
 	config.Related.Domain = false
 	config.Related.Score = false
 	ref = []string{}
-	test = config.extractRelatedDomainInfo(rd)
+	test, _ = config.ExtractCSVSubRow(rd)
 	if !strSliceEq(ref, test) {
 		t.Fatalf("%v != %v", ref, test)
 	}
@@ -181,7 +181,7 @@ func TestExtractRelatedDomainInfo(t *testing.T) {
 	// empty, it should still return blank fields
 	rdBlank := []goinvestigate.RelatedDomain{}
 	ref = []string{""}
-	test = config.extractRelatedDomainInfo(rdBlank)
+	test, _ = config.ExtractCSVSubRow(rdBlank)
 	if !strSliceEq(ref, test) {
 		t.Fatalf("%v != %v", ref, test)
 	}
@@ -200,7 +200,7 @@ func TestExtractCooccurrenceInfo(t *testing.T) {
 	}
 
 	ref := []string{"download.example.com:0.9320288065469468, query.example.com:0.06797119345305325"}
-	test := config.extractCooccurrenceInfo(cl)
+	test, _ := config.ExtractCSVSubRow(cl)
 	if !strSliceEq(ref, test) {
 		t.Fatalf("%v != %v", ref, test)
 	}
@@ -208,7 +208,7 @@ func TestExtractCooccurrenceInfo(t *testing.T) {
 	// turn off scores
 	config.Cooccurrences.Score = false
 	ref = []string{"download.example.com, query.example.com"}
-	test = config.extractCooccurrenceInfo(cl)
+	test, _ = config.ExtractCSVSubRow(cl)
 	if !strSliceEq(ref, test) {
 		t.Fatalf("%v != %v", ref, test)
 	}
@@ -217,7 +217,7 @@ func TestExtractCooccurrenceInfo(t *testing.T) {
 	// turn off domains
 	config.Cooccurrences.Domain = false
 	ref = []string{"0.9320288065469468, 0.06797119345305325"}
-	test = config.extractCooccurrenceInfo(cl)
+	test, _ = config.ExtractCSVSubRow(cl)
 	if !strSliceEq(ref, test) {
 		t.Fatalf("%v != %v", ref, test)
 	}
@@ -227,7 +227,7 @@ func TestExtractCooccurrenceInfo(t *testing.T) {
 	config.Cooccurrences.Domain = false
 	config.Cooccurrences.Score = false
 	ref = []string{}
-	test = config.extractCooccurrenceInfo(cl)
+	test, _ = config.ExtractCSVSubRow(cl)
 	if !strSliceEq(ref, test) {
 		t.Fatalf("%v != %v", ref, test)
 	}
@@ -238,7 +238,7 @@ func TestExtractCooccurrenceInfo(t *testing.T) {
 	// empty, it should still return blank fields
 	refBlank := []goinvestigate.Cooccurrence{}
 	ref = []string{""}
-	test = config.extractCooccurrenceInfo(refBlank)
+	test, _ = config.ExtractCSVSubRow(refBlank)
 	if !strSliceEq(ref, test) {
 		t.Fatalf("%v != %v", ref, test)
 	}
@@ -282,7 +282,7 @@ func TestExtractSecurityFeaturesInfo(t *testing.T) {
 		"ID:0.3848226710420966, BY:0.1127399438411313",
 		"0", "0", "DDoS", "Malware",
 	}
-	test := config.extractSecurityFeaturesInfo(sec)
+	test, _ := config.ExtractCSVSubRow(sec)
 	if !strSliceEq(ref, test) {
 		t.Fatalf("%v != %v", ref, test)
 	}
@@ -298,7 +298,7 @@ func TestExtractSecurityFeaturesInfo(t *testing.T) {
 		"ID:0.3848226710420966, BY:0.1127399438411313",
 		"0", "0", "DDoS", "Malware",
 	}
-	test = config.extractSecurityFeaturesInfo(sec)
+	test, _ = config.ExtractCSVSubRow(sec)
 	if !strSliceEq(ref, test) {
 		t.Fatalf("%v != %v", ref, test)
 	}
@@ -315,7 +315,7 @@ func TestExtractSecurityFeaturesInfo(t *testing.T) {
 		"UA:0.24074075, IN:0.018518519",
 		"0", "0", "DDoS", "Malware",
 	}
-	test = config.extractSecurityFeaturesInfo(sec)
+	test, _ = config.ExtractCSVSubRow(sec)
 	if !strSliceEq(ref, test) {
 		t.Fatalf("%v != %v", ref, test)
 	}
@@ -341,7 +341,7 @@ func TestExtractSecurityFeaturesInfo(t *testing.T) {
 	config.Security.Attack = false
 	config.Security.ThreatType = false
 	ref = []string{}
-	test = config.extractSecurityFeaturesInfo(sec)
+	test, _ = config.ExtractCSVSubRow(sec)
 	if !strSliceEq(ref, test) {
 		t.Fatalf("%v != %v", ref, test)
 	}
@@ -388,7 +388,7 @@ func TestExtractSecurityFeaturesInfo(t *testing.T) {
 		"0", "0", "0", "0", "0", "0", "0", "0", "0",
 		"false", "", "", "", "0", "0", "", "",
 	}
-	test = config.extractSecurityFeaturesInfo(secBlank)
+	test, _ = config.ExtractCSVSubRow(secBlank)
 	if !strSliceEq(ref, test) {
 		t.Fatalf("%v != %v", ref, test)
 	}
@@ -418,7 +418,7 @@ func TestExtractDomainTagInfo(t *testing.T) {
 		"http://ancgrli.prophp.org/:Malware:2014-04-07:Current",
 		"http://ancgrli.prophp.org/34/45791.html:Malware:2014-03-04:2014-03-05",
 	}
-	test := config.extractDomainTagInfo(dt)
+	test, _ := config.ExtractCSVSubRow(dt)
 	if !strSliceEq(ref, test) {
 		t.Fatalf("%v != %v", ref, test)
 	}
@@ -430,7 +430,7 @@ func TestExtractDomainTagInfo(t *testing.T) {
 		"http://ancgrli.prophp.org/:Current",
 		"http://ancgrli.prophp.org/34/45791.html:2014-03-05",
 	}
-	test = config.extractDomainTagInfo(dt)
+	test, _ = config.ExtractCSVSubRow(dt)
 	if !strSliceEq(ref, test) {
 		t.Fatalf("%v != %v", ref, test)
 	}
@@ -439,7 +439,7 @@ func TestExtractDomainTagInfo(t *testing.T) {
 	config.TaggingDates.End = false
 	config.TaggingDates.Url = false
 	ref = []string{}
-	test = config.extractDomainTagInfo(dt)
+	test, _ = config.ExtractCSVSubRow(dt)
 	if !strSliceEq(ref, test) {
 		t.Fatalf("%v != %v", ref, test)
 	}
@@ -452,7 +452,7 @@ func TestExtractDomainTagInfo(t *testing.T) {
 	// empty, it should still return blank fields
 	dtBlank := []goinvestigate.DomainTag{}
 	ref = []string{""}
-	test = config.extractDomainTagInfo(dtBlank)
+	test, _ = config.ExtractCSVSubRow(dtBlank)
 	if !strSliceEq(ref, test) {
 		t.Fatalf("%v != %v", ref, test)
 	}
@@ -528,7 +528,7 @@ func TestExtractDomainRRHistoryInfo(t *testing.T) {
 		"1970.1616237100388", "985.0808118550194",
 		"false", "false", "false", "false", "0.5",
 	}
-	test := config.extractDomainRRHistoryInfo(hist)
+	test, _ := config.ExtractCSVSubRow(hist)
 	if !strSliceEq(ref, test) {
 		t.Fatalf("%v != %v", ref, test)
 	}
@@ -552,7 +552,7 @@ func TestExtractDomainRRHistoryInfo(t *testing.T) {
 		"38:-97, 33.78659999999999:-118.2987",
 		"1970.1616237100388", "985.0808118550194",
 	}
-	test = config.extractDomainRRHistoryInfo(hist)
+	test, _ = config.ExtractCSVSubRow(hist)
 	if !strSliceEq(ref, test) {
 		t.Fatalf("%v != %v", ref, test)
 	}
@@ -570,7 +570,7 @@ func TestExtractDomainRRHistoryInfo(t *testing.T) {
 	oldRRHist := config.DomainRRHistory
 	config.DomainRRHistory = DomainRRHistoryConfig{}
 	ref = []string{}
-	test = config.extractDomainRRHistoryInfo(hist)
+	test, _ = config.ExtractCSVSubRow(hist)
 	if !strSliceEq(ref, test) {
 		t.Fatalf("%v != %v", ref, test)
 	}
@@ -606,7 +606,7 @@ func TestExtractDomainRRHistoryInfo(t *testing.T) {
 		"", "0", "0", "0", "0", "0", "0", "", "", "", "0", "0", "",
 		"0", "0", "false", "false", "false", "false", "0",
 	}
-	test = config.extractDomainRRHistoryInfo(histBlank)
+	test, _ = config.ExtractCSVSubRow(histBlank)
 	if !strSliceEq(ref, test) {
 		t.Fatalf("%v != %v", ref, test)
 	}
