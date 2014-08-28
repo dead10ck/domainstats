@@ -27,6 +27,7 @@ func any(structField interface{}) bool {
 	return false
 }
 
+// Derive the header of the CSV output file from the config
 func (c *Config) DeriveHeader() (header []string) {
 	appendField := func(field string, cond bool) {
 		if cond {
@@ -41,28 +42,90 @@ func (c *Config) DeriveHeader() (header []string) {
 		for i := 0; i < rVal.NumField(); i++ {
 			fieldVal := rVal.Type().Field(i)
 			fieldName := fieldVal.Name
-			appendField(fieldName, rVal.Field(i).Bool())
+			if fieldName != "Labels" {
+				appendField(fieldName, rVal.Field(i).Bool())
+			}
 		}
 	}
 
-	// Add the static fields
+	// add the domain to the front
+	header = append(header, "Domain")
+
+	// add the fields in the same order the queries are constructed
 	appendField("Status", c.Status)
 	appendFields(c.Categories)
-	appendFields(c.Security)
-	appendFields(c.DomainRRHistory)
-
-	// Add a single header field for each dynamic field
 	if any(c.Cooccurrences) {
 		appendField("Cooccurrences", true)
 	}
 	if any(c.Related) {
 		appendField("RelatedDomains", true)
 	}
+	appendFields(c.Security)
 	if any(c.TaggingDates) {
 		appendField("TaggingDates", true)
 	}
+	if any(c.DomainRRHistory.Periods) {
+		appendField("RR Periods", true)
+	}
+	appendFields(c.DomainRRHistory.Features)
 
 	return header
+}
+
+// returns the list of Investigate functions to call for each domain
+func (c *Config) DeriveMessages(inv *goinvestigate.Investigate,
+	domain string) (msgs []*DomainQueryMessage) {
+	if any(c.Categories) || c.Status {
+		msgs = append(msgs, &DomainQueryMessage{
+			&CategorizationQuery{
+				DomainQuery{inv, domain},
+				c.Categories.Labels,
+			},
+			make(chan DomainQueryResponse, 1),
+		})
+	}
+	if any(c.Cooccurrences) {
+		msgs = append(msgs, &DomainQueryMessage{
+			&CooccurrencesQuery{
+				DomainQuery{inv, domain},
+			},
+			make(chan DomainQueryResponse, 1),
+		})
+	}
+	if any(c.Related) {
+		msgs = append(msgs, &DomainQueryMessage{
+			&RelatedQuery{
+				DomainQuery{inv, domain},
+			},
+			make(chan DomainQueryResponse, 1),
+		})
+	}
+	if any(c.Security) {
+		msgs = append(msgs, &DomainQueryMessage{
+			&SecurityQuery{
+				DomainQuery{inv, domain},
+			},
+			make(chan DomainQueryResponse, 1),
+		})
+	}
+	if any(c.TaggingDates) {
+		msgs = append(msgs, &DomainQueryMessage{
+			&DomainTagsQuery{
+				DomainQuery{inv, domain},
+			},
+			make(chan DomainQueryResponse, 1),
+		})
+	}
+	if any(c.DomainRRHistory.Periods) || any(c.DomainRRHistory.Features) {
+		msgs = append(msgs, &DomainQueryMessage{
+			&DomainRRHistoryQuery{
+				DomainQuery{inv, domain},
+				"A",
+			},
+			make(chan DomainQueryResponse, 1),
+		})
+	}
+	return msgs
 }
 
 // Uses a goinvestigate response to derive the field values to go in a
@@ -190,38 +253,54 @@ func (c *Config) extractDomainTagInfo(resp []goinvestigate.DomainTag) []string {
 			dtStrs = append(dtStrs, strings.Join(fieldStrs, ":"))
 		}
 	}
+
+	// if any fields are configured to be fetched from Tagging Dates,
+	// but there just happens to not be any info for this domain,
+	// return a blank field
+	if len(dtStrs) == 0 && any(c.TaggingDates) {
+		return []string{""}
+	}
+
 	return dtStrs
 }
 
 func (c *Config) extractDomainRRHistoryInfo(resp *goinvestigate.DomainRRHistory) []string {
 	row := []string{}
-	rrPeriodsStr := c.rrPeriodsToStr(resp.RRPeriods)
-	row = appendIf(row, rrPeriodsStr, rrPeriodsStr != "")
-	row = appendIf(row, strconv.Itoa(resp.RRFeatures.Age), c.DomainRRHistory.Age)
-	row = appendIf(row, strconv.Itoa(resp.RRFeatures.TTLsMin), c.DomainRRHistory.TTLsMin)
-	row = appendIf(row, strconv.Itoa(resp.RRFeatures.TTLsMax), c.DomainRRHistory.TTLsMax)
-	row = appendIf(row, convertFloatToStr(resp.RRFeatures.TTLsMean), c.DomainRRHistory.TTLsMean)
-	row = appendIf(row, convertFloatToStr(resp.RRFeatures.TTLsMedian), c.DomainRRHistory.TTLsMedian)
-	row = appendIf(row, convertFloatToStr(resp.RRFeatures.TTLsStdDev), c.DomainRRHistory.TTLsStdDev)
-	row = appendIf(row, strings.Join(resp.RRFeatures.CountryCodes, ", "), c.DomainRRHistory.CountryCodes)
+
+	// if no fields from the RRPeriods are configured to be fetched, don't
+	// try to convert it at all - just skip it
+	// If they ARE configured as such, but there just happens to not be any periods
+	// in the response data, it will append an empty string
+	if any(c.DomainRRHistory.Periods) {
+		rrPeriodsStr := c.rrPeriodsToStr(resp.RRPeriods)
+		row = append(row, rrPeriodsStr)
+	}
+
+	row = appendIf(row, strconv.Itoa(resp.RRFeatures.Age), c.DomainRRHistory.Features.Age)
+	row = appendIf(row, strconv.Itoa(resp.RRFeatures.TTLsMin), c.DomainRRHistory.Features.TTLsMin)
+	row = appendIf(row, strconv.Itoa(resp.RRFeatures.TTLsMax), c.DomainRRHistory.Features.TTLsMax)
+	row = appendIf(row, convertFloatToStr(resp.RRFeatures.TTLsMean), c.DomainRRHistory.Features.TTLsMean)
+	row = appendIf(row, convertFloatToStr(resp.RRFeatures.TTLsMedian), c.DomainRRHistory.Features.TTLsMedian)
+	row = appendIf(row, convertFloatToStr(resp.RRFeatures.TTLsStdDev), c.DomainRRHistory.Features.TTLsStdDev)
+	row = appendIf(row, strings.Join(resp.RRFeatures.CountryCodes, ", "), c.DomainRRHistory.Features.CountryCodes)
 
 	asnStrs := []string{}
 	for _, asn := range resp.RRFeatures.ASNs {
 		asnStrs = append(asnStrs, strconv.Itoa(asn))
 	}
 
-	row = appendIf(row, strings.Join(asnStrs, ", "), c.DomainRRHistory.ASNs)
-	row = appendIf(row, strings.Join(resp.RRFeatures.Prefixes, ", "), c.DomainRRHistory.Prefixes)
-	row = appendIf(row, strconv.Itoa(resp.RRFeatures.RIPSCount), c.DomainRRHistory.RIPSCount)
-	row = appendIf(row, convertFloatToStr(resp.RRFeatures.RIPSDiversity), c.DomainRRHistory.RIPSDiversity)
-	row = appendIf(row, locsToStr(resp.RRFeatures.Locations), c.DomainRRHistory.Locations)
-	row = appendIf(row, convertFloatToStr(resp.RRFeatures.GeoDistanceSum), c.DomainRRHistory.GeoDistanceSum)
-	row = appendIf(row, convertFloatToStr(resp.RRFeatures.GeoDistanceMean), c.DomainRRHistory.GeoDistanceMean)
-	row = appendIf(row, strconv.FormatBool(resp.RRFeatures.NonRoutable), c.DomainRRHistory.NonRoutable)
-	row = appendIf(row, strconv.FormatBool(resp.RRFeatures.MailExchanger), c.DomainRRHistory.MailExchanger)
-	row = appendIf(row, strconv.FormatBool(resp.RRFeatures.CName), c.DomainRRHistory.CName)
-	row = appendIf(row, strconv.FormatBool(resp.RRFeatures.FFCandidate), c.DomainRRHistory.FFCandidate)
-	row = appendIf(row, convertFloatToStr(resp.RRFeatures.RIPSStability), c.DomainRRHistory.RIPSStability)
+	row = appendIf(row, strings.Join(asnStrs, ", "), c.DomainRRHistory.Features.ASNs)
+	row = appendIf(row, strings.Join(resp.RRFeatures.Prefixes, ", "), c.DomainRRHistory.Features.Prefixes)
+	row = appendIf(row, strconv.Itoa(resp.RRFeatures.RIPSCount), c.DomainRRHistory.Features.RIPSCount)
+	row = appendIf(row, convertFloatToStr(resp.RRFeatures.RIPSDiversity), c.DomainRRHistory.Features.RIPSDiversity)
+	row = appendIf(row, locsToStr(resp.RRFeatures.Locations), c.DomainRRHistory.Features.Locations)
+	row = appendIf(row, convertFloatToStr(resp.RRFeatures.GeoDistanceSum), c.DomainRRHistory.Features.GeoDistanceSum)
+	row = appendIf(row, convertFloatToStr(resp.RRFeatures.GeoDistanceMean), c.DomainRRHistory.Features.GeoDistanceMean)
+	row = appendIf(row, strconv.FormatBool(resp.RRFeatures.NonRoutable), c.DomainRRHistory.Features.NonRoutable)
+	row = appendIf(row, strconv.FormatBool(resp.RRFeatures.MailExchanger), c.DomainRRHistory.Features.MailExchanger)
+	row = appendIf(row, strconv.FormatBool(resp.RRFeatures.CName), c.DomainRRHistory.Features.CName)
+	row = appendIf(row, strconv.FormatBool(resp.RRFeatures.FFCandidate), c.DomainRRHistory.Features.FFCandidate)
+	row = appendIf(row, convertFloatToStr(resp.RRFeatures.RIPSStability), c.DomainRRHistory.Features.RIPSStability)
 	return row
 }
 
@@ -237,18 +316,19 @@ func locsToStr(locs []goinvestigate.Location) string {
 }
 
 func (c *Config) rrPeriodsToStr(periods []goinvestigate.ResourceRecordPeriod) string {
+
 	periodStrs := []string{}
 	for _, p := range periods {
 		flStrs := []string{}
-		flStrs = appendIf(flStrs, p.FirstSeen, c.DomainRRHistory.FirstSeen)
-		flStrs = appendIf(flStrs, p.LastSeen, c.DomainRRHistory.LastSeen)
+		flStrs = appendIf(flStrs, p.FirstSeen, c.DomainRRHistory.Periods.FirstSeen)
+		flStrs = appendIf(flStrs, p.LastSeen, c.DomainRRHistory.Periods.LastSeen)
 		for _, rr := range p.RRs {
 			rrStrs := []string{}
-			rrStrs = appendIf(rrStrs, rr.Name, c.DomainRRHistory.Name)
-			rrStrs = appendIf(rrStrs, strconv.Itoa(rr.TTL), c.DomainRRHistory.TTL)
-			rrStrs = appendIf(rrStrs, rr.Class, c.DomainRRHistory.Class)
-			rrStrs = appendIf(rrStrs, rr.Type, c.DomainRRHistory.Type)
-			rrStrs = appendIf(rrStrs, rr.RR, c.DomainRRHistory.RR)
+			rrStrs = appendIf(rrStrs, rr.Name, c.DomainRRHistory.Periods.Name)
+			rrStrs = appendIf(rrStrs, strconv.Itoa(rr.TTL), c.DomainRRHistory.Periods.TTL)
+			rrStrs = appendIf(rrStrs, rr.Class, c.DomainRRHistory.Periods.Class)
+			rrStrs = appendIf(rrStrs, rr.Type, c.DomainRRHistory.Periods.Type)
+			rrStrs = appendIf(rrStrs, rr.RR, c.DomainRRHistory.Periods.RR)
 
 			flrr := append(flStrs, rrStrs...)
 			if len(flrr) != 0 {
@@ -256,6 +336,8 @@ func (c *Config) rrPeriodsToStr(periods []goinvestigate.ResourceRecordPeriod) st
 			}
 		}
 	}
+
+	// otherwise, return an empty slice
 	return strings.Join(periodStrs, ", ")
 }
 
@@ -310,98 +392,6 @@ func NewConfig(configFilePath string) (config *Config, err error) {
 	return config, nil
 }
 
-//func (c *Config) numTrueFields() int {
-//ctr := 0
-////rType := reflect.TypeOf(c)
-////rInterfaceVal := reflect.ValueOf(structField)
-////rVal := rInterfaceVal.Convert(rType)
-//cFields := reflect.ValueOf(c)
-//for i := 0; i < rVal.NumField(); i++ {
-//if rVal.Field(i).Bool() {
-//ctr++
-//}
-//}
-//return ctr
-//}
-
-func (c *Config) numEndpoints() int {
-	ctr := 0
-	if any(c.Categories) || c.Status {
-		ctr++
-	}
-	if any(c.Cooccurrences) {
-		ctr++
-	}
-	if any(c.Related) {
-		ctr++
-	}
-	if any(c.Security) {
-		ctr++
-	}
-	if any(c.TaggingDates) {
-		ctr++
-	}
-	if any(c.DomainRRHistory) {
-		ctr++
-	}
-	return ctr
-}
-
-// returns the list of Investiga te functions to call for each domain
-func (c *Config) DeriveMessages(inv *goinvestigate.Investigate,
-	domain string, respChan chan DomainQueryResponse) (msgs []*DomainQueryMessage) {
-	if any(c.Categories) || c.Status {
-		msgs = append(msgs, &DomainQueryMessage{
-			&CategorizationQuery{
-				DomainQuery{inv, domain},
-				c.Categories.Labels,
-			},
-			respChan,
-		})
-	}
-	if any(c.Cooccurrences) {
-		msgs = append(msgs, &DomainQueryMessage{
-			&CooccurrencesQuery{
-				DomainQuery{inv, domain},
-			},
-			respChan,
-		})
-	}
-	if any(c.Related) {
-		msgs = append(msgs, &DomainQueryMessage{
-			&RelatedQuery{
-				DomainQuery{inv, domain},
-			},
-			respChan,
-		})
-	}
-	if any(c.Security) {
-		msgs = append(msgs, &DomainQueryMessage{
-			&SecurityQuery{
-				DomainQuery{inv, domain},
-			},
-			respChan,
-		})
-	}
-	if any(c.TaggingDates) {
-		msgs = append(msgs, &DomainQueryMessage{
-			&DomainTagsQuery{
-				DomainQuery{inv, domain},
-			},
-			respChan,
-		})
-	}
-	if any(c.DomainRRHistory) {
-		msgs = append(msgs, &DomainQueryMessage{
-			&DomainTagsQuery{
-				DomainQuery{inv, domain},
-			},
-			respChan,
-		})
-	}
-	return msgs
-}
-
 type Config struct {
 	APIKey       string
 	NumEndpoints int
@@ -454,13 +444,21 @@ type TaggingDatesConfig struct {
 }
 
 type DomainRRHistoryConfig struct {
-	FirstSeen       bool
-	LastSeen        bool
-	Name            bool
-	TTL             bool
-	Class           bool
-	Type            bool
-	RR              bool
+	Periods  DomainRRHistoryPeriodConfig
+	Features DomainRRHistoryFeaturesConfig
+}
+
+type DomainRRHistoryPeriodConfig struct {
+	FirstSeen bool
+	LastSeen  bool
+	Name      bool
+	TTL       bool
+	Class     bool
+	Type      bool
+	RR        bool
+}
+
+type DomainRRHistoryFeaturesConfig struct {
 	Age             bool
 	TTLsMin         bool
 	TTLsMax         bool
