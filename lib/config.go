@@ -390,9 +390,7 @@ func NewConfig(configFilePath string) (config *Config, err error) {
 }
 
 type Config struct {
-	APIKey       string
-	NumEndpoints int
-	//NumFields     int
+	APIKey          string
 	Status          bool
 	Categories      CategoriesConfig
 	Cooccurrences   DomainScoreConfig
