@@ -175,6 +175,19 @@ func TestGeoString(t *testing.T) {
 	}
 }
 
+func TestAppendIf(t *testing.T) {
+	testStrSlice := []string{"foo"}
+	testStrSliceAppended := appendIf(testStrSlice, "bar", true)
+	testStrSliceNotAppended := appendIf(testStrSlice, "bar", false)
+
+	if len(testStrSliceAppended) != 2 || testStrSliceAppended[1] != "bar" {
+		t.Fatal("testStrSliceAppended should have \"bar\" in it")
+	}
+	if len(testStrSliceNotAppended) != 1 {
+		t.Fatal("testStrSliceAppended should NOT have \"bar\" in it")
+	}
+}
+
 func TestDeriveMessages(t *testing.T) {
 	msgs := config.DeriveMessages(inv, "www.google.com")
 
