@@ -188,6 +188,44 @@ func TestAppendIf(t *testing.T) {
 	}
 }
 
+func TestDeriveHeader(t *testing.T) {
+	testHeader := config.DeriveHeader()
+	refHeader := []string{
+		"Domain", "Status", "SecurityCategories", "ContentCategories",
+		"Cooccurrences", "RelatedDomains", "DGAScore", "Perplexity", "Entropy",
+		"SecureRank2", "PageRank", "ASNScore", "PrefixScore", "RIPScore",
+		"Popularity", "Fastflux", "Geodiversity", "GeodiversityNormalized",
+		"TLDGeodiversity", "Geoscore", "KSTest", "Attack", "ThreatType",
+		"TaggingDates", "RR Periods", "Age", "TTLsMin", "TTLsMax", "TTLsMean",
+		"TTLsMedian", "TTLsStdDev", "CountryCodes", "ASNs", "Prefixes", "RIPSCount",
+		"RIPSDiversity", "Locations", "GeoDistanceSum", "GeoDistanceMean",
+		"NonRoutable", "MailExchanger", "CName", "FFCandidate", "RIPSStability",
+	}
+	verifyHeader := func() {
+		if len(testHeader) != len(refHeader) {
+			t.Fatalf("testHeader = %v, but should = %v", testHeader, refHeader)
+		}
+		for i := range testHeader {
+			if testHeader[i] != refHeader[i] {
+				t.Fatalf("testHeader = %v, but should = %v", testHeader, refHeader)
+			}
+		}
+	}
+	verifyHeader()
+
+	varConfig := Config{
+		Status:     true,
+		Categories: CategoriesConfig{SecurityCategories: true},
+		Security:   SecurityConfig{DGAScore: true},
+	}
+
+	refHeader = []string{
+		"Domain", "Status", "SecurityCategories", "DGAScore",
+	}
+	testHeader = varConfig.DeriveHeader()
+	verifyHeader()
+}
+
 func TestDeriveMessages(t *testing.T) {
 	msgs := config.DeriveMessages(inv, "www.google.com")
 
