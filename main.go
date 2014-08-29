@@ -56,7 +56,6 @@ func main() {
 		log.Fatal(err)
 	}
 	var outWriter *csv.Writer
-	var header []string
 	inv := goinvestigate.New(config.APIKey)
 	inChan := readDomainsFrom(flag.Arg(flag.NArg() - 1))
 
@@ -71,8 +70,7 @@ func main() {
 		}
 		outWriter = csv.NewWriter(outFile)
 		outWriter.Comma = rune('\t')
-		header = config.DeriveHeader()
-		outWriter.Write(header)
+		outWriter.Write(config.DeriveHeader())
 		defer func() {
 			outWriter.Flush()
 			outFile.Close()
@@ -80,15 +78,35 @@ func main() {
 	}
 
 	outChan := getInfo(config, inv, inChan)
+	mainWg := new(sync.WaitGroup)
+
+	mainWg.Add(1)
+	go writeOut(outWriter, outChan, mainWg)
+
+	mainWg.Wait()
+}
+
+func writeOut(outWriter *csv.Writer, outChan <-chan []string, wg *sync.WaitGroup) {
 	numProcessed := 0
+	msgChan := make(chan string, 10)
+	go printStdOut(msgChan)
 
 	for respRow := range outChan {
 		numProcessed++
-		fmt.Printf("\r%120s", " ")
-		fmt.Printf("\r%d/%d: %s", numProcessed, numDomains, respRow[0])
+		msgChan <- fmt.Sprintf("\r%d/%d: %s", numProcessed, numDomains, respRow[0])
 		if outWriter != nil {
 			outWriter.Write(respRow)
 		}
+	}
+
+	close(msgChan)
+	wg.Done()
+}
+
+func printStdOut(msgChan <-chan string) {
+	for msg := range msgChan {
+		fmt.Printf("\r%120s", " ")
+		fmt.Print(msg)
 	}
 	fmt.Println()
 }
