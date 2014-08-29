@@ -80,6 +80,83 @@ func TestLocsToStr(t *testing.T) {
 	}
 }
 
+func TestRrPeriodsToStr(t *testing.T) {
+	testRRPeriods := []goinvestigate.ResourceRecordPeriod{
+		goinvestigate.ResourceRecordPeriod{
+			FirstSeen: "2014-08-28",
+			LastSeen:  "2014-08-29",
+			RRs: []goinvestigate.ResourceRecord{
+				goinvestigate.ResourceRecord{
+					Name:  "TestRR1",
+					TTL:   100,
+					Class: "TestClass1",
+					Type:  "TestType1",
+					RR:    "TestRR1",
+				},
+				goinvestigate.ResourceRecord{
+					Name:  "TestRR2",
+					TTL:   200,
+					Class: "TestClass2",
+					Type:  "TestType2",
+					RR:    "TestRR2",
+				},
+			},
+		},
+		goinvestigate.ResourceRecordPeriod{
+			FirstSeen: "2014-07-28",
+			LastSeen:  "2014-07-29",
+			RRs: []goinvestigate.ResourceRecord{
+				goinvestigate.ResourceRecord{
+					Name:  "TestRR3",
+					TTL:   300,
+					Class: "TestClass3",
+					Type:  "TestType3",
+					RR:    "TestRR3",
+				},
+				goinvestigate.ResourceRecord{
+					Name:  "TestRR4",
+					TTL:   400,
+					Class: "TestClass4",
+					Type:  "TestType4",
+					RR:    "TestRR4",
+				},
+			},
+		},
+	}
+	refStr := "2014-08-28:2014-08-29:TestRR1:100:TestClass1:TestType1:TestRR1, " +
+		"2014-08-28:2014-08-29:TestRR2:200:TestClass2:TestType2:TestRR2, " +
+		"2014-07-28:2014-07-29:TestRR3:300:TestClass3:TestType3:TestRR3, " +
+		"2014-07-28:2014-07-29:TestRR4:400:TestClass4:TestType4:TestRR4"
+
+	testStr := config.rrPeriodsToStr(testRRPeriods)
+
+	if refStr != testStr {
+		t.Fatal("testStr = %s, but should = %s", testStr, refStr)
+	}
+
+	// sanity check for some config variation
+	varConfig := Config{
+		DomainRRHistory: DomainRRHistoryConfig{
+			Periods: DomainRRHistoryPeriodConfig{
+				FirstSeen: true,
+				LastSeen:  true,
+				RR:        true,
+			},
+		},
+	}
+
+	refStr = "2014-08-28:2014-08-29:TestRR1, " +
+		"2014-08-28:2014-08-29:TestRR2, " +
+		"2014-07-28:2014-07-29:TestRR3, " +
+		"2014-07-28:2014-07-29:TestRR4"
+
+	testStr = varConfig.rrPeriodsToStr(testRRPeriods)
+
+	if refStr != testStr {
+		t.Fatal("testStr = %s, but should = %s", testStr, refStr)
+	}
+}
+
 func TestDeriveMessages(t *testing.T) {
 	msgs := config.DeriveMessages(inv, "www.google.com")
 
