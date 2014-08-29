@@ -23,15 +23,15 @@ import (
 
 type opt struct {
 	verbose       bool
+	setup         string
 	outFile       string
 	configPath    string
 	maxGoroutines int
 }
 
 var (
-	opts              opt
-	defaultConfigPath string = os.Getenv("HOME") + "/.domainstats/default.toml"
-	numDomains        int
+	opts       opt
+	numDomains int
 )
 
 const (
@@ -39,17 +39,40 @@ const (
 )
 
 func init() {
-	flag.IntVar(&opts.maxGoroutines, "m", DEFAULT_MAX_GOROUTINES,
-		"Maximum number of goroutines to use for parallel HTTP requests")
-	flag.BoolVar(&opts.verbose, "v", false, "Print out verbose log messages.")
-	flag.StringVar(&opts.outFile, "out", "", "Output matching IPs to the given file")
-	flag.StringVar(&opts.configPath, "c", defaultConfigPath, "The config file to use")
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 }
 
 func main() {
+
+	flag.IntVar(&opts.maxGoroutines, "m", DEFAULT_MAX_GOROUTINES,
+		"Maximum number of goroutines to use for parallel HTTP requests")
+	flag.BoolVar(&opts.verbose, "v", false, "Print out verbose log messages.")
+	flag.StringVar(&opts.setup, "setup", "",
+		"Generate a default config file in ~/.domainstats/default.toml with"+
+			" the given API key.")
+	flag.StringVar(&opts.outFile, "out", "", "Output matching IPs to the given file")
+	flag.StringVar(&opts.configPath, "c", domainstats.DefaultConfigPath, "The config file to use")
 	flag.Parse()
+
+	if opts.setup != "" {
+		err := domainstats.GenerateDefaultConfig(opts.setup)
+		if err != nil {
+			log.Fatalf("error creating default config file: %v", err)
+		}
+
+		fmt.Printf(fmt.Sprintf("Config file generated in %s\n", domainstats.DefaultConfigPath))
+		os.Exit(0)
+	}
+
+	// if the default config file does not exist and the user did not specify
+	// a different config file, then the program cannot proceed
+	if _, err := os.Stat(domainstats.DefaultConfigPath); os.IsNotExist(err) && opts.configPath == domainstats.DefaultConfigPath {
+		log.Fatal("Default config file missing, and no other config file specified." +
+			" Please run domainstats with the -setup option to set up a default " +
+			"config file.")
+	}
+
 	config, err := domainstats.NewConfig(opts.configPath)
 	if err != nil {
 		log.Fatal(err)

@@ -2,11 +2,26 @@ package domainstats
 
 import (
 	"log"
+	"os"
+	"path"
 	"reflect"
 
 	"github.com/BurntSushi/toml"
 	"github.com/dead10ck/goinvestigate"
 )
+
+var (
+	DefaultConfigPath string
+)
+
+func init() {
+	home := os.Getenv("HOME")
+	if home == "" {
+		log.Fatal("HOME environment variable not set. Wrong platform?")
+	}
+
+	DefaultConfigPath = path.Join(home, "/.domainstats/default.toml")
+}
 
 // Takes a struct that consists of just bool fields
 // and returns true if any of the fields are true
@@ -134,6 +149,97 @@ func NewConfig(configFilePath string) (config *Config, err error) {
 	}
 
 	return config, nil
+}
+
+// Generates a default config and writes it to ~/.domainstats/default.toml
+func GenerateDefaultConfig(apiKey string) error {
+	configFile, err := os.Create(DefaultConfigPath)
+	if err != nil {
+		return err
+	}
+
+	trueConfig := Config{
+		APIKey: apiKey,
+		Status: true,
+		Categories: CategoriesConfig{
+			Labels:             true,
+			SecurityCategories: true,
+			ContentCategories:  true,
+		},
+		Cooccurrences: DomainScoreConfig{
+			Domain: true,
+			Score:  true,
+		},
+		Related: DomainScoreConfig{
+			Domain: true,
+			Score:  true,
+		},
+		Security: SecurityConfig{
+			DGAScore:               true,
+			Perplexity:             true,
+			Entropy:                true,
+			SecureRank2:            true,
+			PageRank:               true,
+			ASNScore:               true,
+			PrefixScore:            true,
+			RIPScore:               true,
+			Popularity:             true,
+			Fastflux:               true,
+			Geodiversity:           true,
+			GeodiversityNormalized: true,
+			TLDGeodiversity:        true,
+			Geoscore:               true,
+			KSTest:                 true,
+			Attack:                 true,
+			ThreatType:             true,
+		},
+		TaggingDates: TaggingDatesConfig{
+			Begin:    true,
+			End:      true,
+			Category: true,
+			Url:      true,
+		},
+		DomainRRHistory: DomainRRHistoryConfig{
+			Periods: DomainRRHistoryPeriodConfig{
+				FirstSeen: true,
+				LastSeen:  true,
+				Name:      true,
+				TTL:       true,
+				Class:     true,
+				Type:      true,
+				RR:        true,
+			},
+			Features: DomainRRHistoryFeaturesConfig{
+				Age:             true,
+				TTLsMin:         true,
+				TTLsMax:         true,
+				TTLsMean:        true,
+				TTLsMedian:      true,
+				TTLsStdDev:      true,
+				CountryCodes:    true,
+				ASNs:            true,
+				Prefixes:        true,
+				RIPSCount:       true,
+				RIPSDiversity:   true,
+				Locations:       true,
+				GeoDistanceSum:  true,
+				GeoDistanceMean: true,
+				NonRoutable:     true,
+				MailExchanger:   true,
+				CName:           true,
+				FFCandidate:     true,
+				RIPSStability:   true,
+			},
+		},
+	}
+
+	tomlEncoder := toml.NewEncoder(configFile)
+	err = tomlEncoder.Encode(trueConfig)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 type Config struct {
