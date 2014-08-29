@@ -58,6 +58,28 @@ func TestAny(t *testing.T) {
 	validate(ts, false)
 }
 
+func TestLocsToStr(t *testing.T) {
+	testLocs := []goinvestigate.Location{
+		goinvestigate.Location{
+			Lat: -100,
+			Lon: 100,
+		},
+		goinvestigate.Location{
+			Lat: -150,
+			Lon: 150,
+		},
+		goinvestigate.Location{
+			Lat: -200,
+			Lon: 200,
+		},
+	}
+	testLocsStr := locsToStr(testLocs)
+	refStr := "-100:100, -150:150, -200:200"
+	if testLocsStr != refStr {
+		t.Fatalf("testLocsStr = %s, but should = %s", testLocsStr, refStr)
+	}
+}
+
 func TestDeriveMessages(t *testing.T) {
 	msgs := config.DeriveMessages(inv, "www.google.com")
 
