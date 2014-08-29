@@ -4,6 +4,9 @@ Investigate API, optionally outputting a CSV file.
 
 Because querying every endpoint can be very time consuming, this program uses
 a TOML file to configure which information should be queried.
+
+For full documentation of usage, see the GitHub page:
+https://github.com/dead10ck/domainstats
 */
 package main
 
