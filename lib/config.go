@@ -230,9 +230,9 @@ func (c *Config) extractSecurityFeaturesInfo(resp *goinvestigate.SecurityFeature
 	row = appendIf(row, convertFloatToStr(resp.RIPScore), c.Security.RIPScore)
 	row = appendIf(row, convertFloatToStr(resp.Popularity), c.Security.Popularity)
 	row = appendIf(row, strconv.FormatBool(resp.Fastflux), c.Security.Fastflux)
-	row = appendIf(row, GeoString(resp.Geodiversity), c.Security.Geodiversity)
-	row = appendIf(row, GeoString(resp.GeodiversityNormalized), c.Security.GeodiversityNormalized)
-	row = appendIf(row, GeoString(resp.TLDGeodiversity), c.Security.TLDGeodiversity)
+	row = appendIf(row, geoString(resp.Geodiversity), c.Security.Geodiversity)
+	row = appendIf(row, geoString(resp.GeodiversityNormalized), c.Security.GeodiversityNormalized)
+	row = appendIf(row, geoString(resp.TLDGeodiversity), c.Security.TLDGeodiversity)
 	row = appendIf(row, convertFloatToStr(resp.Geoscore), c.Security.Geoscore)
 	row = appendIf(row, convertFloatToStr(resp.KSTest), c.Security.KSTest)
 	row = appendIf(row, resp.Attack, c.Security.Attack)
@@ -341,7 +341,7 @@ func (c *Config) rrPeriodsToStr(periods []goinvestigate.ResourceRecordPeriod) st
 	return strings.Join(periodStrs, ", ")
 }
 
-func GeoString(gs []goinvestigate.GeoFeatures) string {
+func geoString(gs []goinvestigate.GeoFeatures) string {
 	strs := []string{}
 	for _, g := range gs {
 		score := strconv.FormatFloat(g.VisitRatio, 'f', -1, 64)
