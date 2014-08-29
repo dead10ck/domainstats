@@ -56,7 +56,12 @@ func main() {
 	}
 	var outWriter *csv.Writer
 	inv := goinvestigate.New(config.APIKey)
-	inChan := readDomainsFrom(flag.Arg(flag.NArg() - 1))
+	domainListFileName := flag.Arg(flag.NArg() - 1)
+	if domainListFileName == "" {
+		fmt.Println("Need a file name")
+		os.Exit(-1)
+	}
+	inChan := readDomainsFrom(domainListFileName)
 
 	if opts.verbose {
 		inv.SetVerbose(true)
