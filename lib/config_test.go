@@ -157,6 +157,24 @@ func TestRrPeriodsToStr(t *testing.T) {
 	}
 }
 
+func TestGeoString(t *testing.T) {
+	testGs := []goinvestigate.GeoFeatures{
+		goinvestigate.GeoFeatures{
+			CountryCode: "US",
+			VisitRatio:  0.5,
+		},
+		goinvestigate.GeoFeatures{
+			CountryCode: "UA",
+			VisitRatio:  0.7,
+		},
+	}
+	testStr := geoString(testGs)
+	refStr := "US:0.5, UA:0.7"
+	if testStr != refStr {
+		t.Fatalf("testStr = %s, but should = %s", testStr, refStr)
+	}
+}
+
 func TestDeriveMessages(t *testing.T) {
 	msgs := config.DeriveMessages(inv, "www.google.com")
 
