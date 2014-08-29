@@ -36,6 +36,28 @@ func strSliceEq(a []string, b []string) bool {
 	return true
 }
 
+func TestAny(t *testing.T) {
+	type testStruct struct {
+		field1 bool
+		field2 bool
+		field3 bool
+	}
+	validate := func(ts testStruct, expected bool) {
+		if v := any(ts); v != expected {
+			t.Fatalf("any(ts) should return %v", expected)
+		}
+	}
+
+	ts := testStruct{true, true, true}
+	validate(ts, true)
+	ts = testStruct{false, true, true}
+	validate(ts, true)
+	ts = testStruct{false, false, true}
+	validate(ts, true)
+	ts = testStruct{false, false, false}
+	validate(ts, false)
+}
+
 func TestDeriveMessages(t *testing.T) {
 	msgs := config.DeriveMessages(inv, "www.google.com")
 
