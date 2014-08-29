@@ -15,7 +15,6 @@ import (
 	"log"
 	"os"
 	"runtime"
-	"strconv"
 	"sync"
 
 	domainstats "github.com/dead10ck/domainstats/lib"
@@ -109,15 +108,6 @@ func printStdOut(msgChan <-chan string) {
 		fmt.Print(msg)
 	}
 	fmt.Println()
-}
-
-func floatToStr(v interface{}) string {
-	switch val := v.(type) {
-	case float64:
-		return strconv.FormatFloat(val, 'f', -1, 64)
-	default:
-		return ""
-	}
 }
 
 // The goroutine which does the HTTP queries
