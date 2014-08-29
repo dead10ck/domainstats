@@ -32,6 +32,7 @@ type opt struct {
 var (
 	opts              opt
 	defaultConfigPath string = os.Getenv("HOME") + "/.domainstats/default.toml"
+	numDomains        int
 )
 
 const (
@@ -56,8 +57,8 @@ func main() {
 	}
 	var outWriter *csv.Writer
 	var header []string
-	domains := readDomainsFrom(flag.Arg(flag.NArg() - 1))
 	inv := goinvestigate.New(config.APIKey)
+	inChan := readDomainsFrom(flag.Arg(flag.NArg() - 1))
 
 	if opts.verbose {
 		inv.SetVerbose(true)
@@ -78,22 +79,13 @@ func main() {
 		}()
 	}
 
-	inChan := make(chan string, len(domains))
-	go func() {
-		for _, d := range domains {
-			inChan <- d
-		}
-		close(inChan)
-	}()
-
 	outChan := getInfo(config, inv, inChan)
-
 	numProcessed := 0
 
 	for respRow := range outChan {
 		numProcessed++
 		fmt.Printf("\r%120s", " ")
-		fmt.Printf("\r%d/%d: %s", numProcessed, len(domains), respRow[0])
+		fmt.Printf("\r%d/%d: %s", numProcessed, numDomains, respRow[0])
 		if outWriter != nil {
 			outWriter.Write(respRow)
 		}
@@ -184,16 +176,24 @@ func getInfo(config *domainstats.Config, inv *goinvestigate.Investigate, domainC
 	return outChan
 }
 
-func readDomainsFrom(fName string) (domains []string) {
+func readDomainsFrom(fName string) <-chan string {
 	file, err := os.Open(fName)
 
 	if err != nil {
 		log.Fatalf("\nError opening domain list %s: %v\n", fName, err)
 	}
 
+	domainChan := make(chan string, 100)
+
 	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		domains = append(domains, scanner.Text())
-	}
-	return domains
+
+	go func() {
+		for scanner.Scan() {
+			domainChan <- scanner.Text()
+			numDomains++
+		}
+		close(domainChan)
+	}()
+
+	return domainChan
 }
