@@ -2,9 +2,7 @@ package domainstats
 
 import (
 	"errors"
-	"io/ioutil"
 	"log"
-	"os"
 	"reflect"
 	"strconv"
 	"strings"
@@ -365,20 +363,9 @@ func convertFloatToStr(f float64) string {
 	return strconv.FormatFloat(f, 'f', -1, 64)
 }
 
+// Returns a new Config object. Reads the TOML file given by configFilePath.
 func NewConfig(configFilePath string) (config *Config, err error) {
-	tomlFile, err := os.Open(configFilePath)
-
-	if err != nil {
-		return nil, err
-	}
-
-	tomlData, err := ioutil.ReadAll(tomlFile)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if _, err := toml.Decode(string(tomlData), &config); err != nil {
+	if _, err := toml.DecodeFile(configFilePath, &config); err != nil {
 		log.Fatal(err)
 	}
 
