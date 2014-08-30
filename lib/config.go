@@ -153,6 +153,14 @@ func NewConfig(configFilePath string) (config *Config, err error) {
 
 // Generates a default config and writes it to ~/.domainstats/default.toml
 func GenerateDefaultConfig(apiKey string) error {
+	configDir := path.Dir(DefaultConfigPath)
+
+	err := os.MkdirAll(configDir, 0700)
+
+	if err != nil {
+		return err
+	}
+
 	configFile, err := os.Create(DefaultConfigPath)
 	if err != nil {
 		return err
