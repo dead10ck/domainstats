@@ -5,7 +5,7 @@ outputting the results to a flat Tab-Separated Value (TSV) file.
 It is fully configurable with a [TOML](https://github.com/toml-lang/toml) file;
 anything and everything that one can query the Investigate API for can be fetched
 and written out to a flat TSV file. It also takes full advantage of Go's 
-concurrency mechanisms, so all requests are done in parallel.
+concurrency mechanisms, so requests are paralellized.
 
 ## Install & Setup
 To install, simply download the correct binary from the Releases page. Or, if you

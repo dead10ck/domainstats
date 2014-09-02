@@ -42,7 +42,6 @@ const (
 )
 
 func init() {
-
 	runtime.GOMAXPROCS(runtime.NumCPU())
 }
 
