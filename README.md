@@ -8,12 +8,7 @@ and written out to a flat TSV file. It also takes full advantage of Go's
 concurrency mechanisms, so requests are paralellized.
 
 ## Install & Setup
-To install, simply download the correct binary from the Releases page. Or, if you
-have Go installed, you can `go get` it.
-
-```sh
-$ go get github.com/dead10ck/domainstats
-```
+To install, simply download the correct binary from the Releases page.
 
 Once you have it installed, generate a default config file:
 
@@ -24,6 +19,25 @@ Config file generated in ~/.domainstats/default.toml
 
 where you should replace `<Your API Key>` with your
 [Investigate API key](https://sgraph.opendns.com/tokens-view).
+
+### Build from source
+To build from the source, first, make sure your
+[`$GOPATH`](http://golang.org/doc/code.html#GOPATH) is set.
+
+This project uses [Godep](https://github.com/tools/godep) to manage dependencies.
+If you don't already have it installed, `go get` it:
+
+```sh
+$ go get github.com/tools/godep
+```
+
+Then, you can download and build/install `domainstats` with:
+
+```sh
+$ go get -d github.com/dead10ck/domainstats
+$ cd $GOPATH/src/github.com/dead10ck/domainstats
+$ godep go install
+```
 
 ## TOML Configuration
 The default config file has all options set to true.
