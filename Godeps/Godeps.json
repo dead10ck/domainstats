@@ -1,0 +1,15 @@
+{
+	"ImportPath": "github.com/dead10ck/domainstats",
+	"GoVersion": "go1.3.1",
+	"Deps": [
+		{
+			"ImportPath": "github.com/BurntSushi/toml",
+			"Rev": "2ceedfee35ad3848e49308ab0c9a4f640cfb5fb2"
+		},
+		{
+			"ImportPath": "github.com/dead10ck/goinvestigate",
+			"Comment": "v2.1.1",
+			"Rev": "b1b31148354db19a502c246d354217142e118224"
+		}
+	]
+}
