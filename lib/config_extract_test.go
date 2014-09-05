@@ -1,12 +1,18 @@
 package domainstats
 
 import (
+	"runtime"
 	"testing"
 
 	"github.com/dead10ck/goinvestigate"
 )
 
+func init() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
+}
+
 func TestLocsToStr(t *testing.T) {
+	t.Parallel()
 	testLocs := []goinvestigate.Location{
 		goinvestigate.Location{
 			Lat: -100,
@@ -29,6 +35,7 @@ func TestLocsToStr(t *testing.T) {
 }
 
 func TestRrPeriodsToStr(t *testing.T) {
+	t.Parallel()
 	testRRPeriods := []goinvestigate.ResourceRecordPeriod{
 		goinvestigate.ResourceRecordPeriod{
 			FirstSeen: "2014-08-28",
@@ -106,6 +113,7 @@ func TestRrPeriodsToStr(t *testing.T) {
 }
 
 func TestGeoString(t *testing.T) {
+	t.Parallel()
 	testGs := []goinvestigate.GeoFeatures{
 		goinvestigate.GeoFeatures{
 			CountryCode: "US",
@@ -124,6 +132,7 @@ func TestGeoString(t *testing.T) {
 }
 
 func TestAppendIf(t *testing.T) {
+	t.Parallel()
 	testStrSlice := []string{"foo"}
 	testStrSliceAppended := appendIf(testStrSlice, "bar", true)
 	testStrSliceNotAppended := appendIf(testStrSlice, "bar", false)

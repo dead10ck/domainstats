@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/dead10ck/goinvestigate"
@@ -22,6 +23,7 @@ func init() {
 		log.Fatal(err)
 	}
 	inv = goinvestigate.New(config.APIKey)
+	runtime.GOMAXPROCS(runtime.NumCPU())
 }
 
 func strSliceEq(a []string, b []string) bool {
@@ -37,6 +39,7 @@ func strSliceEq(a []string, b []string) bool {
 }
 
 func TestAny(t *testing.T) {
+	t.Parallel()
 	type testStruct struct {
 		field1 bool
 		field2 bool
@@ -59,6 +62,7 @@ func TestAny(t *testing.T) {
 }
 
 func TestDeriveHeader(t *testing.T) {
+	t.Parallel()
 	testHeader := config.DeriveHeader()
 	refHeader := []string{
 		"Domain", "Status", "SecurityCategories", "ContentCategories",
@@ -97,6 +101,7 @@ func TestDeriveHeader(t *testing.T) {
 }
 
 func TestDeriveMessages(t *testing.T) {
+	t.Parallel()
 	msgs := config.DeriveMessages(inv, "www.google.com")
 
 	if len(msgs) != 6 {
