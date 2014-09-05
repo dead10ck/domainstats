@@ -231,6 +231,7 @@ func readDomainsFrom(fName string) <-chan string {
 			numDomains++
 		}
 		close(domainChan)
+		file.Close()
 	}()
 
 	return domainChan
