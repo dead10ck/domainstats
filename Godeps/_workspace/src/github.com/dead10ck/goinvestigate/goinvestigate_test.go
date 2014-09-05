@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"runtime"
 	"testing"
 )
 
@@ -14,6 +15,7 @@ var (
 )
 
 func init() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
 	verbose := flag.Bool("sgverbose", false, "Set SGraph output to verbose.")
 	flag.Parse()
 	key := os.Getenv("INVESTIGATE_KEY")
@@ -25,6 +27,7 @@ func init() {
 }
 
 func TestIPRRHistory(t *testing.T) {
+	t.Parallel()
 	out, err := inv.IpRRHistory("208.64.121.161", "A")
 	if err != nil {
 		t.Fatal(err)
@@ -40,6 +43,7 @@ func TestIPRRHistory(t *testing.T) {
 }
 
 func TestDomainRRHistory(t *testing.T) {
+	t.Parallel()
 	out, err := inv.DomainRRHistory("bibikun.ru", "A")
 	if err != nil {
 		t.Fatal(err)
@@ -57,6 +61,7 @@ func TestDomainRRHistory(t *testing.T) {
 }
 
 func TestCategorization(t *testing.T) {
+	t.Parallel()
 	out, err := inv.Categorization("www.amazon.com", false)
 	if err != nil {
 		t.Fatal(err)
@@ -89,6 +94,7 @@ func TestCategorization(t *testing.T) {
 }
 
 func TestCategorizations(t *testing.T) {
+	t.Parallel()
 	domains := []string{"www.amazon.com", "www.opendns.com", "bibikun.ru"}
 	out, err := inv.Categorizations(domains, true)
 	if err != nil {
@@ -133,6 +139,7 @@ func TestCategorizations(t *testing.T) {
 }
 
 func TestRelatedDomains(t *testing.T) {
+	t.Parallel()
 	out, err := inv.RelatedDomains("www.test.com")
 	if err != nil {
 		t.Fatal(err)
@@ -143,6 +150,7 @@ func TestRelatedDomains(t *testing.T) {
 }
 
 func TestCooccurrences(t *testing.T) {
+	t.Parallel()
 	out, err := inv.Cooccurrences("www.test.com")
 	if err != nil {
 		t.Fatal(err)
@@ -153,6 +161,7 @@ func TestCooccurrences(t *testing.T) {
 }
 
 func TestSecurity(t *testing.T) {
+	t.Parallel()
 	out, err := inv.Security("www.test.com")
 	if err != nil {
 		t.Fatal(err)
@@ -163,6 +172,7 @@ func TestSecurity(t *testing.T) {
 }
 
 func TestDomainTags(t *testing.T) {
+	t.Parallel()
 	out, err := inv.DomainTags("bibikun.ru")
 	if err != nil {
 		t.Fatal(err)
@@ -173,6 +183,7 @@ func TestDomainTags(t *testing.T) {
 }
 
 func TestLatestDomains(t *testing.T) {
+	t.Parallel()
 	outSlice, err := inv.LatestDomains("46.161.41.43")
 
 	if err != nil {
@@ -185,6 +196,7 @@ func TestLatestDomains(t *testing.T) {
 }
 
 func TestErrorResponse(t *testing.T) {
+	t.Parallel()
 	badInv := New("bad_key")
 	badInv.SetVerbose(true)
 	_, err := badInv.Categorization("www.google.com", true)

@@ -136,11 +136,11 @@ func (inv *Investigate) Post(subUri string, body io.Reader) (*http.Response, err
 	return inv.Request(req)
 }
 
-func catUri(domain string, labels bool) string {
+func catUri(domain string, labels bool) (string, error) {
 	uri, err := url.Parse(fmt.Sprintf(urls["categorization"], domain))
 
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 
 	v := url.Values{}
@@ -150,7 +150,7 @@ func catUri(domain string, labels bool) string {
 	}
 
 	uri.RawQuery = v.Encode()
-	return uri.String()
+	return uri.String(), nil
 }
 
 // Get the domain status and categorization of a domain.
@@ -158,9 +158,13 @@ func catUri(domain string, labels bool) string {
 //
 // For more detail, see https://sgraph.opendns.com/docs/api#categorization
 func (inv *Investigate) Categorization(domain string, labels bool) (*DomainCategorization, error) {
-	uri := catUri(domain, labels)
+	uri, err := catUri(domain, labels)
+	if err != nil {
+		inv.Logf("%v", err)
+		return nil, err
+	}
 	resp := make(map[string]DomainCategorization)
-	err := inv.GetParse(uri, resp)
+	err = inv.GetParse(uri, resp)
 	if err != nil {
 		return nil, err
 	}
@@ -176,7 +180,11 @@ func (inv *Investigate) Categorization(domain string, labels bool) (*DomainCateg
 //
 // For more detail, see https://sgraph.opendns.com/docs/api#categorization
 func (inv *Investigate) Categorizations(domains []string, labels bool) (map[string]DomainCategorization, error) {
-	uri := catUri("", labels)
+	uri, err := catUri("", labels)
+	if err != nil {
+		inv.Logf("%v", err)
+		return nil, err
+	}
 	body, err := json.Marshal(domains)
 
 	if err != nil {

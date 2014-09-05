@@ -2,10 +2,16 @@ package goinvestigate
 
 import (
 	"encoding/json"
+	"runtime"
 	"testing"
 )
 
+func init() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
+}
+
 func TestUnmarshalDomainCategorization(t *testing.T) {
+	t.Parallel()
 	data := []byte(
 		`{
 	"status": 1,
@@ -38,6 +44,7 @@ func TestUnmarshalDomainCategorization(t *testing.T) {
 }
 
 func TestUnmarshallCooccurrenceList(t *testing.T) {
+	t.Parallel()
 	data := []byte(
 		`{
 	"pfs2": [
@@ -84,6 +91,7 @@ func TestUnmarshallCooccurrenceList(t *testing.T) {
 }
 
 func TestUnmarshallRelatedDomainList(t *testing.T) {
+	t.Parallel()
 	data := []byte(
 		`{
   "tb1": [
@@ -138,6 +146,7 @@ func TestUnmarshallRelatedDomainList(t *testing.T) {
 }
 
 func TestUnmarshalSecurityFeatures(t *testing.T) {
+	t.Parallel()
 	data := []byte(
 		`{
   "dga_score": 38.301771886101335,
@@ -236,6 +245,7 @@ func TestUnmarshalSecurityFeatures(t *testing.T) {
 }
 
 func TestUnmarshalDomainTags(t *testing.T) {
+	t.Parallel()
 	data := []byte(
 		`[
   {
@@ -295,6 +305,7 @@ func TestUnmarshalDomainTags(t *testing.T) {
 }
 
 func TestUnmarshalDomainRRHistory(t *testing.T) {
+	t.Parallel()
 	data := []byte(
 		`{
   "rrs_tf": [
@@ -437,6 +448,7 @@ func TestUnmarshalDomainRRHistory(t *testing.T) {
 }
 
 func TestUnmarshalIPRRHistory(t *testing.T) {
+	t.Parallel()
 	data := []byte(
 		`{
   "rrs": [
@@ -513,6 +525,7 @@ func TestUnmarshalIPRRHistory(t *testing.T) {
 }
 
 func TestUnmarshalMaliciousDomain(t *testing.T) {
+	t.Parallel()
 	data := []byte(
 		`[
   {
