@@ -231,6 +231,8 @@ type DomainResourceRecordFeatures struct {
 	CName           bool
 	FFCandidate     bool    `json:"ff_candidate"`
 	RIPSStability   float64 `json:"rips_stability"`
+	BaseDomain      string  `json:"base_domain"`
+	IsSubdomain     bool    `json:"is_subdomain"`
 }
 
 type DomainRRHistory struct {

@@ -363,7 +363,9 @@ func TestUnmarshalDomainRRHistory(t *testing.T) {
     "mail_exchanger": false,
     "cname": false,
     "ff_candidate": false,
-    "rips_stability": 0.5
+    "rips_stability": 0.5,
+	"base_domain": "example.com",
+	"is_subdomain": false
   }
 }`,
 	)
@@ -413,6 +415,8 @@ func TestUnmarshalDomainRRHistory(t *testing.T) {
 			CName:           false,
 			FFCandidate:     false,
 			RIPSStability:   0.5,
+			BaseDomain:      "example.com",
+			IsSubdomain:     false,
 		},
 	}
 
@@ -442,7 +446,9 @@ func TestUnmarshalDomainRRHistory(t *testing.T) {
 		testDRR.RRFeatures.MailExchanger != refDRR.RRFeatures.MailExchanger ||
 		testDRR.RRFeatures.CName != refDRR.RRFeatures.CName ||
 		testDRR.RRFeatures.FFCandidate != refDRR.RRFeatures.FFCandidate ||
-		testDRR.RRFeatures.RIPSStability != refDRR.RRFeatures.RIPSStability {
+		testDRR.RRFeatures.RIPSStability != refDRR.RRFeatures.RIPSStability ||
+		testDRR.RRFeatures.BaseDomain != refDRR.RRFeatures.BaseDomain ||
+		testDRR.RRFeatures.IsSubdomain != refDRR.RRFeatures.IsSubdomain {
 		t.Fatalf("%v != %v", refDRR, testDRR)
 	}
 }

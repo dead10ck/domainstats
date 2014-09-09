@@ -8,8 +8,8 @@
 		},
 		{
 			"ImportPath": "github.com/dead10ck/goinvestigate",
-			"Comment": "v2.1.2",
-			"Rev": "9c6addcd6b52ab7abc4b1677a250c48577b2dc73"
+			"Comment": "v2.2.0",
+			"Rev": "ecedd81a89a03c958bd828a4cc2ecf20fb3fbbec"
 		}
 	]
 }
