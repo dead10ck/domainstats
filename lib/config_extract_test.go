@@ -592,6 +592,8 @@ func TestExtractDomainRRHistoryInfo(t *testing.T) {
 			CName:           false,
 			FFCandidate:     false,
 			RIPSStability:   0.5,
+			BaseDomain:      "example.com",
+			IsSubdomain:     false,
 		},
 	}
 	ref := []string{
@@ -601,7 +603,7 @@ func TestExtractDomainRRHistoryInfo(t *testing.T) {
 		"US", "15133, 40528", "93.184.208.0, 192.0.43.0", "2", "1",
 		"38:-97, 33.78659999999999:-118.2987",
 		"1970.1616237100388", "985.0808118550194",
-		"false", "false", "false", "false", "0.5",
+		"false", "false", "false", "false", "0.5", "example.com", "false",
 	}
 	test, _ := config.ExtractCSVSubRow(hist)
 	if !strSliceEq(ref, test) {
@@ -619,6 +621,8 @@ func TestExtractDomainRRHistoryInfo(t *testing.T) {
 	config.DomainRRHistory.Features.CName = false
 	config.DomainRRHistory.Features.FFCandidate = false
 	config.DomainRRHistory.Features.RIPSStability = false
+	config.DomainRRHistory.Features.BaseDomain = false
+	config.DomainRRHistory.Features.IsSubdomain = false
 	ref = []string{
 		"2013-07-31:2013-10-17:IN, " +
 			"2013-07-31:2013-10-17:US",
@@ -640,6 +644,8 @@ func TestExtractDomainRRHistoryInfo(t *testing.T) {
 	config.DomainRRHistory.Features.CName = true
 	config.DomainRRHistory.Features.FFCandidate = true
 	config.DomainRRHistory.Features.RIPSStability = true
+	config.DomainRRHistory.Features.BaseDomain = true
+	config.DomainRRHistory.Features.IsSubdomain = true
 
 	// everything off should return an empty list
 	oldRRHist := config.DomainRRHistory
@@ -675,11 +681,13 @@ func TestExtractDomainRRHistoryInfo(t *testing.T) {
 			CName:           false,
 			FFCandidate:     false,
 			RIPSStability:   0,
+			BaseDomain:      "",
+			IsSubdomain:     false,
 		},
 	}
 	ref = []string{
 		"", "0", "0", "0", "0", "0", "0", "", "", "", "0", "0", "",
-		"0", "0", "false", "false", "false", "false", "0",
+		"0", "0", "false", "false", "false", "false", "0", "", "false",
 	}
 	test, _ = config.ExtractCSVSubRow(histBlank)
 	if !strSliceEq(ref, test) {

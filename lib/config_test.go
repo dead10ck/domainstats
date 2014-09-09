@@ -74,6 +74,7 @@ func TestDeriveHeader(t *testing.T) {
 		"TTLsMedian", "TTLsStdDev", "CountryCodes", "ASNs", "Prefixes", "RIPSCount",
 		"RIPSDiversity", "Locations", "GeoDistanceSum", "GeoDistanceMean",
 		"NonRoutable", "MailExchanger", "CName", "FFCandidate", "RIPSStability",
+		"BaseDomain", "IsSubdomain",
 	}
 	verifyHeader := func() {
 		if len(testHeader) != len(refHeader) {

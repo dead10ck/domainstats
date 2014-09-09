@@ -237,6 +237,8 @@ func GenerateDefaultConfig(apiKey string) error {
 				CName:           true,
 				FFCandidate:     true,
 				RIPSStability:   true,
+				BaseDomain:      true,
+				IsSubdomain:     true,
 			},
 		},
 	}
@@ -334,4 +336,6 @@ type DomainRRHistoryFeaturesConfig struct {
 	CName           bool
 	FFCandidate     bool
 	RIPSStability   bool
+	BaseDomain      bool
+	IsSubdomain     bool
 }

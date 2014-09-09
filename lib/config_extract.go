@@ -181,6 +181,8 @@ func (c *Config) extractDomainRRHistoryInfo(resp *goinvestigate.DomainRRHistory)
 	row = appendIf(row, strconv.FormatBool(resp.RRFeatures.CName), c.DomainRRHistory.Features.CName)
 	row = appendIf(row, strconv.FormatBool(resp.RRFeatures.FFCandidate), c.DomainRRHistory.Features.FFCandidate)
 	row = appendIf(row, convertFloatToStr(resp.RRFeatures.RIPSStability), c.DomainRRHistory.Features.RIPSStability)
+	row = appendIf(row, resp.RRFeatures.BaseDomain, c.DomainRRHistory.Features.BaseDomain)
+	row = appendIf(row, strconv.FormatBool(resp.RRFeatures.IsSubdomain), c.DomainRRHistory.Features.IsSubdomain)
 	return row
 }
 
