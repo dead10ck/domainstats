@@ -43,7 +43,7 @@ $ godep go install
 The default config file has all options set to true.
 
 ```toml
-APIKey = "c426026e-6886-4499-ab92-6fdd8b53e155"
+APIKey = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 Status = true
 
 [Categories]
@@ -130,7 +130,7 @@ If you only want, e.g., status, cooccurrences, RIP scores, and threat type, you 
 a config file like so:
 
 ```toml
-APIKey = "c426026e-6886-4499-ab92-6fdd8b53e155"
+APIKey = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 Status = true
 
 [Cooccurrences]
