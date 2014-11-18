@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/dead10ck/domainstats.svg?branch=master)](https://travis-ci.org/dead10ck/domainstats)
 # domainstats
 `domainstats` is a tool to query the
 [OpenDNS Investigate](https://sgraph.opendns.com/main) API using a list of domains,
