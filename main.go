@@ -20,7 +20,7 @@ import (
 	"runtime"
 	"sync"
 
-	domainstats "github.com/dead10ck/domainstats/lib"
+	domainstats "github.com/dead10ck/domainstats/internal"
 	"github.com/dead10ck/goinvestigate"
 )
 

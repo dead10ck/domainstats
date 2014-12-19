@@ -2,4 +2,4 @@ language: go
 before_install: go get github.com/tools/godep
 install: godep go install
 before_script: domainstats -setup "test"
-script: godep go test -v ./lib
+script: godep go test -v ./internal
